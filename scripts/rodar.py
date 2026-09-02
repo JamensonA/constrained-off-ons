@@ -14,7 +14,7 @@ from pathlib import Path
 RAIZ = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(RAIZ / "src"))
 
-from coff import carregar, download  # noqa: E402
+from coff import carregar, download, qualificar  # noqa: E402
 
 log = logging.getLogger("coff")
 
@@ -66,12 +66,32 @@ def etapa_carga(args: argparse.Namespace):
     return df, rel
 
 
+def etapa_qualificacao(args: argparse.Namespace, df, rel_carga):
+    delta_t_h = min(rel_carga.delta_t.values()).total_seconds() / 3600
+    q = qualificar.qualificar(df, args.referencia, delta_t_h, args.excluir_disp_zero)
+    processado = Path(args.dados) / "processed"
+    q.to_parquet(processado / "qualificado.parquet", index=False)
+    rel = qualificar.relatorio_qualificacao(q, args.referencia, delta_t_h)
+    (Path(args.docs) / "relatorio_qualificacao.md").write_text(
+        qualificar.relatorio_markdown(rel), encoding="utf-8"
+    )
+    log.info(
+        "qualificacao: %s qualificados de %s; ENG total %.0f MWh; relatorio em "
+        "docs/relatorio_qualificacao.md",
+        f"{int(q['qualificado'].sum()):,}",
+        f"{len(q):,}",
+        q["eng_mwh"].sum(),
+    )
+    return q, rel
+
+
 def main(argv: list[str] | None = None) -> int:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
     args = argumentos(argv)
     if not args.sem_download:
         etapa_download(args)
-    etapa_carga(args)
+    df, rel_carga = etapa_carga(args)
+    etapa_qualificacao(args, df, rel_carga)
     return 0
 
 
