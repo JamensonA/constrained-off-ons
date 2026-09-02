@@ -1,0 +1,93 @@
+"""Testes das agregacoes sobre o mes sintetico de 2 usinas (valores a mao).
+
+USI_A (UFV, 2025-02): h0 ENE ger 10 ref 20 -> 5 MWh; h1 sem restricao; h2 CNF ger 0 ref 30
+-> 15 MWh; h3 REL ger 5 ref 25 final 20 -> 7,5 MWh (coalesce) / 10 MWh (referencia).
+Energia gerada A = (10+10+0+5) x 0,5 = 12,5 MWh. USI_B: sem restricao, 2 MW x 4 -> 4 MWh.
+"""
+
+from __future__ import annotations
+
+import pytest
+
+from coff import carregar, metricas, qualificar
+
+
+@pytest.fixture
+def q(df_mes_2_usinas):
+    return qualificar.qualificar(carregar.tipar(df_mes_2_usinas), "coalesce", 0.5)
+
+
+def test_eng_por_mes(q):
+    tab = metricas.eng_por_mes(q)
+    assert list(tab.columns) == ["EOL", "UFV"]
+    assert tab.loc["2025-02", "UFV"] == pytest.approx(27.5)
+    assert tab.loc["2025-02", "EOL"] == 0.0
+
+
+def test_eng_por_categoria(q):
+    tab = metricas.eng_por_categoria(q).set_index("categoria")["eng_mwh"]
+    assert tab["energetica"] == 5.0 and tab["confiabilidade"] == 15.0
+    assert tab["eletrica"] == pytest.approx(7.5)
+
+
+def test_eng_por_subsistema(q):
+    tab = metricas.eng_por_subsistema(q)
+    linha = tab.iloc[0]
+    assert (linha["subsistema"], linha["estado"]) == ("NE", "BA")
+    assert linha["eng_mwh"] == pytest.approx(27.5)
+    assert linha["energia_gerada_mwh"] == pytest.approx(16.5)
+    assert linha["taxa_corte"] == pytest.approx(27.5 / 44)
+
+
+def test_top_usinas_e_taxa_de_corte(q):
+    tab = metricas.top_usinas(q, n=15)
+    assert list(tab["id_ons"]) == ["USI_A", "USI_B"]
+    a = tab.iloc[0]
+    assert a["eng_mwh"] == pytest.approx(27.5) and a["energia_gerada_mwh"] == pytest.approx(12.5)
+    assert a["taxa_corte"] == pytest.approx(27.5 / 40)
+    assert tab.iloc[1]["taxa_corte"] == 0.0
+    assert len(metricas.top_usinas(q, n=1)) == 1
+
+
+def test_perfil_hora_mes(q):
+    perfil = metricas.perfil_hora_mes(q)
+    assert perfil.shape == (24, 1)
+    assert perfil.loc[0, "2025-02"] == pytest.approx(5 / 28)
+    assert perfil.loc[2, "2025-02"] == pytest.approx(15 / 28)
+    assert perfil.loc[5, "2025-02"] == 0.0
+
+
+def test_top_descricoes(q):
+    tab = metricas.top_descricoes(q, n=20)
+    assert list(tab["dsc_restricao"]) == ["CNF", "REL", "ENE"]
+    assert tab.iloc[0]["eng_mwh"] == 15.0 and tab.iloc[0]["registros"] == 1
+
+
+def test_sensibilidade_referencia(q):
+    tab = metricas.sensibilidade_referencia(q, 0.5).set_index("categoria")
+    assert tab.loc["eletrica", "eng_coalesce_mwh"] == pytest.approx(7.5)
+    assert tab.loc["eletrica", "eng_referencia_mwh"] == pytest.approx(10.0)
+    assert tab.loc["eletrica", "dif_abs_mwh"] == pytest.approx(-2.5)
+    assert tab.loc["eletrica", "dif_rel"] == pytest.approx(-0.25)
+    assert tab.loc["energetica", "dif_abs_mwh"] == 0.0
+
+
+def test_ocorrencias_par_vazio(q):
+    assert metricas.ocorrencias_par(q).empty
+
+
+def test_resumo_anual(q):
+    tab = metricas.resumo_anual(q)
+    assert len(tab) == 1
+    linha = tab.iloc[0]
+    assert (linha["ano"], linha["fonte"]) == (2025, "UFV")
+    assert linha["eng_gwh"] == pytest.approx(0.0275, abs=1e-4)
+    assert linha["taxa_corte_pct"] == pytest.approx(62.5)
+
+
+def test_taxa_mensal(q):
+    tab = metricas.taxa_mensal(q)
+    assert list(tab["mes"]) == ["2025-02"]
+    assert tab.loc[0, "eng_mwh"] == pytest.approx(27.5)
+    assert tab.loc[0, "taxa_corte"] == pytest.approx(27.5 / 44)
+    assert tab.loc[0, "taxa_corte_UFV"] == pytest.approx(27.5 / 44)

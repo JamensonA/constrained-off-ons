@@ -1,0 +1,22 @@
+dsc_restricao,categoria,origem,eng_mwh,registros
+Controle de frequência do SIN.,energetica,sistemica,26337475.4,994187
+(sem descricao),energetica,sistemica,10121292.6,456405
+Controle de inequação: CONTROLE DE CARREGAMENTO DA TRANSFORMAÇÃO 500/345 KV DA SE RIO NOVO DO SUL COM GVA6/MTUM/RNS RADIALIZADA - IO-ON.SE.5RJ,confiabilidade,sistemica,3636178.2,148723
+Controle de inequação: LIMITAÇÃO DA TRANSMISSÃO NA LT 500 KV AÇU III / JAGUARUANA II – C1(V7) - IO-ON.NE.5NE,confiabilidade,local,3331033.2,116678
+(sem descricao),confiabilidade,sistemica,3223806.6,101471
+(sem descricao),eletrica,sistemica,3178081.3,102359
+(sem descricao),confiabilidade,local,2484281.4,155094
+"Controle de inequação: LIMITAÇÃO DA TRANSMISSÃO NAS LTS 500 KV AÇU III / QUIXADÁ – C1(V2), AÇU III / MILAGRES II – C1(C2) E AÇU III / JAGUARUANA II – C1(V7) - IO-ON.NE.5NE",confiabilidade,local,1481686.9,92315
+Controle do fluxo: FNESE # Fluxo Nordeste/Sudeste - Conforme SGI 67.632-25,eletrica,sistemica,850091.7,21937
+Controle de inequação: LIMITAÇÃO DA TRANSMISSÃO NA LT 500 KV JAGUARUANA II / PACATUBA – C1(L1) - IO-ON.NE.5NE,confiabilidade,local,498769.7,24180
+Controle de inequação: CONTROLE DE CARREGAMENTO DA LT 230 KV ITABIRA 4 / ITABIRA 5 PARA CONTINGÊNCIA DUPLA DAS LT 500 KV ITABIRA 5 / VESPASIANO 2 E LT 500 KV ITABIRA 5 / NEVES 1 - IO-ON.SE.3MG,confiabilidade,sistemica,430177.6,11888
+Controle de inequação: CONTROLE DE CARREGAMENTO DA TRANSFORMAÇÃO 500/345 KV DA SE RIO NOVO DO SUL COM GVA6/MTUM/RNS NÃO RADIALIZADA - IO-ON.SE.5RJ,confiabilidade,sistemica,409101.3,16423
+Controle do fluxo: FNS_FNESE # Somatório de FNS+FNESE,confiabilidade,sistemica,276362.1,12276
+Desligamento das LT 525 kV Povo Novo / Marmeleiro C2. SGI N° 46.066-26,eletrica,local,250044.7,2400
+(sem descricao),eletrica,local,130897.5,6044
+"Controle de inequação: CONTROLE DE CARREGAMENTO DA LT 230 KV IRECÊ / MORRO DO CHAPÉU II – C1(S5), PREVENINDO
+A PERDA DA LT 500 KV MORRO DO CHAPÉU II / OUROLÂNDIA II – C1(N4) - IO-ON.NE.2SO e MOP 442-S/2025",confiabilidade,local,115917.4,2647
+Controle de inequação: LIMITE DE FJUSC EM FUNÇÃO DA POTÊNCIA TRANSMITIDA PELOS BIPOLOS XINGU / ESTREITO E XINGU / TERMINAL RIO - IO-ON.SENE,confiabilidade,sistemica,112739.7,2311
+Controle de inequação: CONTROLE DE CARREGAMENTO DA LT 230 KV BOM NOME / MILAGRES – C1(L1) PREVENINDO A PERDA DA LT 230 KV ABAIARA / MILAGRES – C1(L2) - IO-ON.NE.2NO,confiabilidade,local,106103.9,4527
+Controle de inequação: LIMITAÇÃO DO FLUXO BAHIA SUDOESTE - IO-ON.NE.2SO,confiabilidade,local,103896.5,6914
+Controle de inequação: CONTROLE DE CARREGAMENTO DA LT 230 KV ITABIRA 4 / ITABIRA 5 PARA CONTINGÊNCIA DUPLA DAS LT 500 KV ITABIRA 5 / VESPASIANO 2 E LT 500 KV ITABIRA 5 / NEVES 1 - IO-ON.SE.5MG,confiabilidade,sistemica,101235.3,3128
