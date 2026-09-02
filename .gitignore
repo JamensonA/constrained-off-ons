@@ -1,0 +1,15 @@
+# dados brutos e processados nunca vao para o Git
+data/
+# ambientes e caches
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+.claude/
+.DS_Store
+build/
+dist/
+*.egg-info/
