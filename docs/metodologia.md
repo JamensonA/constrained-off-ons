@@ -113,7 +113,7 @@ Leitura: o ONS publica percentuais apurados (com regras da REN ANEEL 1.030/2022 
 ## Limitacoes
 
 - Os dados publicados pelo ONS fazem parte de um processo de consistencia recorrente e podem ser atualizados apos a publicacao; o cache local so e refeito com `--forcar`.
-- A coluna `dsc_restricao` (descricao textual da restricao) **so existe a partir de 2025_01** (EOL 2023_01→2024_12 e UFV 2024_04→2024_12 nao a possuem; 33 arquivos). Nesses meses ela e criada nula e as metricas por descricao cobrem apenas 2025_01 em diante.
+- A coluna `dsc_restricao` (descricao textual da restricao) **so existe a partir de 2025_01** (EOL 2023_01→2024_12 e UFV 2024_04→2024_12 nao a possuem; 33 arquivos, criada nula) e **so e preenchida pelo ONS a partir de 2025_09**: de 2025_01 a 2025_08 a coluna existe mas esta vazia em todas as linhas. Por isso a metrica "top descricoes" (figura 5, `top_descricoes.csv`) cobre efetivamente 2025_09 em diante; a ENG dos registros restritos de 2025_01–2025_08 aparece como "(sem descricao)".
 - O codigo de razao **PAR** ("restricao indicada no parecer de acesso") consta do dicionario de dados, mas **nao ocorre em nenhum dos 73 meses x fonte** da janela (contagem mes a mes em `relatorio_carga.md`). E tratado como codigo conhecido e contado; a categoria "parecer de acesso" aparece vazia.
 - Os conjuntos de usinas nao sao desagregados por usina individual (datasets `*_detail` fora do escopo).
 - As regras de apuracao da REN ANEEL 1.030/2022 nao sao reproduzidas; ENG aqui e uma medida descritiva, nao um montante contratual.

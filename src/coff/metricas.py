@@ -100,7 +100,11 @@ def perfil_hora_mes(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def top_descricoes(df: pd.DataFrame, n: int = 20) -> pd.DataFrame:
-    """6. ``dsc_restricao`` por ENG (MWh), com categoria, origem e nº de registros."""
+    """6. ``dsc_restricao`` por ENG (MWh), com categoria, origem e nº de registros.
+
+    Descricao vazia (coluna presente mas nao preenchida, 2025_01–2025_08) vira
+    ``"(sem descricao)"``; descricao nula (coluna ausente ate 2024_12) fica de fora.
+    """
     q = df[df["qualificado"] & df["dsc_restricao"].notna()]
     dsc = q["dsc_restricao"].astype(str).str.strip().replace("", "(sem descricao)")
     g = q.groupby(

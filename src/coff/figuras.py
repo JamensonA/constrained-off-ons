@@ -177,7 +177,10 @@ def fig5_top_descricoes(tab: pd.DataFrame, caminho: Path, rodape: str, n: int = 
     ax.set_yticks(posicoes)
     ax.set_yticklabels(rotulos)
     ax.set_xlabel("Energia não gerada (GWh)")
-    ax.set_title(f"{len(tab)} descrições de restrição com maior energia não gerada (desde 2025-01)")
+    ax.set_title(
+        f"{len(tab)} descrições de restrição com maior energia não gerada "
+        "(campo preenchido pelo ONS desde 2025-09)"
+    )
     ax.tick_params(axis="y", labelsize=8)
     ax.grid(axis="x", linestyle=":", alpha=0.6)
     legendas = [plt.Rectangle((0, 0), 1, 1, color=CORES_CATEGORIA[c]) for c in ORDEM_CATEGORIAS]
