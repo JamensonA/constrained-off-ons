@@ -207,3 +207,79 @@ def resumo_anual(df: pd.DataFrame) -> pd.DataFrame:
         }
     )
     return saida.sort_values(["ano", "fonte"]).reset_index(drop=True)
+
+
+def eng_por_uf(df: pd.DataFrame, desde: str = "2025-01") -> pd.DataFrame:
+    """ENG por UF e categoria (GWh), energia gerada (GWh) e taxa de corte, desde ``desde``.
+
+    ``desde`` e ``AAAA-MM`` (inclusive). Janela padrao 2025-01 -> ultimo mes, comparavel ao
+    cadastro da 1a Temporada de Acesso 2026. Colunas: ``uf, eng_energetica_gwh,
+    eng_confiabilidade_gwh, eng_eletrica_gwh, eng_parecer_de_acesso_gwh, eng_gwh,
+    energia_gerada_gwh, taxa_corte``.
+    """
+    mes = _mes(df)
+    q = df[mes >= desde]
+    uf = q["id_estado"].astype(str)
+    por_cat = (
+        q[q["qualificado"]]
+        .groupby(
+            [uf[q["qualificado"]], q.loc[q["qualificado"], "categoria"].astype(str)], observed=True
+        )["eng_mwh"]
+        .sum()
+        .unstack("categoria")
+        .reindex(columns=list(ORDEM_CATEGORIAS), fill_value=0.0)
+        .fillna(0.0)
+    )
+    por_cat.columns = [f"eng_{c.replace(' ', '_')}_gwh" for c in por_cat.columns]
+    tot = q.groupby(uf, observed=True).agg(
+        eng_mwh=("eng_mwh", "sum"), gerada_mwh=("energia_gerada_mwh", "sum")
+    )
+    tab = tot.join(por_cat, how="left").fillna(0.0)
+    for c in [c for c in tab.columns if c.startswith("eng_") and c.endswith("_gwh")]:
+        tab[c] = tab[c] / 1000
+    tab["eng_gwh"] = tab["eng_mwh"] / 1000
+    tab["energia_gerada_gwh"] = tab["gerada_mwh"] / 1000
+    tab["taxa_corte"] = taxa_corte(tab["eng_mwh"], tab["gerada_mwh"])
+    tab = (
+        tab.drop(columns=["eng_mwh", "gerada_mwh"])
+        .reset_index()
+        .rename(columns={"id_estado": "uf"})
+    )
+    return tab.sort_values("eng_gwh", ascending=False).reset_index(drop=True)
+
+
+def cruzar_temporada(eng_uf: pd.DataFrame, temporada: pd.DataFrame) -> pd.DataFrame:
+    """Junta ENG por UF com o cadastro da Temporada de Acesso (outer join por UF).
+
+    ``temporada`` tem colunas ``uf, ad_mw, advc_mw, pc_mw, inab_mw`` (vazio = nao informado).
+    Acrescenta ``cadastrado_mw`` (soma das quatro parcelas) e ``frac_inab`` = inab / cadastrado
+    quando cadastrado > 0. UF sem ENG fica com zeros; UF sem Temporada fica vazia.
+    """
+    t = temporada.copy()
+    t["uf"] = t["uf"].astype(str).str.strip().str.upper()
+    parcelas = ["ad_mw", "advc_mw", "pc_mw", "inab_mw"]
+    for c in parcelas:
+        t[c] = pd.to_numeric(t[c], errors="coerce")
+    t["cadastrado_mw"] = t[parcelas].fillna(0.0).sum(axis=1)
+    t["frac_inab"] = (
+        t["inab_mw"].fillna(0.0) / t["cadastrado_mw"].where(t["cadastrado_mw"] > 0)
+    ).where(t["cadastrado_mw"] > 0)
+    e = eng_uf.copy()
+    e["uf"] = e["uf"].astype(str).str.strip().str.upper()
+    cruz = e.merge(t, on="uf", how="outer")
+    for c in [c for c in e.columns if c != "uf"]:
+        cruz[c] = cruz[c].fillna(0.0)
+    return cruz.sort_values("eng_gwh", ascending=False).reset_index(drop=True)
+
+
+def spearman_taxa_inabilitacao(cruz: pd.DataFrame) -> tuple[float, int]:
+    """Spearman entre taxa de corte e fracao inabilitada; so UFs com os dois dados."""
+    sub = cruz.dropna(subset=["frac_inab"])
+    sub = sub[sub["energia_gerada_gwh"] + sub["eng_gwh"] > 0]
+    n = len(sub)
+    if n < 3:
+        return float("nan"), n
+    # Spearman = Pearson dos postos (empates recebem posto medio); sem dependencia de scipy
+    postos_x = sub["taxa_corte"].rank(method="average")
+    postos_y = sub["frac_inab"].rank(method="average")
+    return float(postos_x.corr(postos_y)), n

@@ -5,3 +5,4 @@
 - G2 (2026-09-02): qualificar.py (R1–R12), 15 testes sobre a fixture da secao 6, docs/relatorio_qualificacao.md (contagens por motivo e flag, fonte x ano), docs/metodologia.md (regras + limitacoes); repo movido para ~/Projetos.
 - G3 (2026-09-02): metricas.py (funcoes 1-8 + resumo anual + taxa mensal), figuras.py (5 figuras), rodar.py ponta a ponta, CSVs em docs/, tabela de sensibilidade coalesce x referencia, validacao externa contra RT DGL-ONS 0189/2025 e serie mensal apurada do ONS; qualificado nao e mais persistido em disco.
 - G4 (2026-09-02): README completo com textos do autor, notebook 01_exploracao.ipynb, metodologia final, checklist da secao 9; figura 5 sem a barra "(sem descricao)".
+- Extra (2026-09-02): cruzamento com a 1a Temporada de Acesso 2026 (NT-ONS DPL 0083/2026): eng_por_uf, cruzar_temporada, figuras 6 e 7, CSVs e secao na metodologia/README.

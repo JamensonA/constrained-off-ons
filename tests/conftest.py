@@ -25,12 +25,12 @@ COLUNAS = [
 ]
 
 
-def _linha(instante, ger, lim, disp, ref, reffinal, cod, orig, dsc, usina="USI_A"):
+def _linha(instante, ger, lim, disp, ref, reffinal, cod, orig, dsc, usina="USI_A", uf="BA"):
     return [
         "NE",
         "NORDESTE",
-        "BA",
-        "BAHIA",
+        uf,
+        {"BA": "BAHIA", "CE": "CEARA"}.get(uf, uf),
         f"CONJ. {usina}",
         usina,
         "-",
@@ -122,7 +122,7 @@ def df_usina_8_instantes() -> pd.DataFrame:
 
 @pytest.fixture
 def df_mes_2_usinas() -> pd.DataFrame:
-    """Mes sintetico minimo: 2 usinas x 4 instantes, para as agregacoes."""
+    """Mes sintetico minimo: 2 usinas (BA e CE) x 4 instantes, para as agregacoes."""
     linhas = []
     for h, (ga, ra, ca) in enumerate(
         [(10.0, 20.0, "ENE"), (10.0, 10.0, None), (0.0, 30.0, "CNF"), (5.0, 25.0, "REL")]
@@ -142,7 +142,19 @@ def df_mes_2_usinas() -> pd.DataFrame:
             )
         )
         linhas.append(
-            _linha(f"2025-02-01 0{h}:00:00", 2.0, None, 10.0, 2.0, None, None, None, None, "USI_B")
+            _linha(
+                f"2025-02-01 0{h}:00:00",
+                2.0,
+                None,
+                10.0,
+                2.0,
+                None,
+                None,
+                None,
+                None,
+                "USI_B",
+                "CE",
+            )
         )
     df = pd.DataFrame(linhas, columns=COLUNAS)
     df["fonte"] = "UFV"

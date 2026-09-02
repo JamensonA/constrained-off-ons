@@ -2,7 +2,7 @@
 
 USI_A (UFV, 2025-02): h0 ENE ger 10 ref 20 -> 5 MWh; h1 sem restricao; h2 CNF ger 0 ref 30
 -> 15 MWh; h3 REL ger 5 ref 25 final 20 -> 7,5 MWh (coalesce) / 10 MWh (referencia).
-Energia gerada A = (10+10+0+5) x 0,5 = 12,5 MWh. USI_B: sem restricao, 2 MW x 4 -> 4 MWh.
+Energia gerada A = (10+10+0+5) x 0,5 = 12,5 MWh. USI_B (CE): sem restricao, 2 MW x 4 -> 4 MWh.
 """
 
 from __future__ import annotations
@@ -35,8 +35,10 @@ def test_eng_por_subsistema(q):
     linha = tab.iloc[0]
     assert (linha["subsistema"], linha["estado"]) == ("NE", "BA")
     assert linha["eng_mwh"] == pytest.approx(27.5)
-    assert linha["energia_gerada_mwh"] == pytest.approx(16.5)
-    assert linha["taxa_corte"] == pytest.approx(27.5 / 44)
+    assert linha["energia_gerada_mwh"] == pytest.approx(12.5)
+    assert linha["taxa_corte"] == pytest.approx(27.5 / 40)
+    ce = tab[tab["estado"] == "CE"].iloc[0]
+    assert ce["eng_mwh"] == 0.0 and ce["energia_gerada_mwh"] == pytest.approx(4.0)
 
 
 def test_top_usinas_e_taxa_de_corte(q):
@@ -91,3 +93,56 @@ def test_taxa_mensal(q):
     assert tab.loc[0, "eng_mwh"] == pytest.approx(27.5)
     assert tab.loc[0, "taxa_corte"] == pytest.approx(27.5 / 44)
     assert tab.loc[0, "taxa_corte_UFV"] == pytest.approx(27.5 / 44)
+
+
+def test_eng_por_uf_e_cruzamento(q):
+    import pandas as pd
+
+    tab = metricas.eng_por_uf(q, "2025-01").set_index("uf")
+    assert list(tab.index) == ["BA", "CE"]
+    assert tab.loc["BA", "eng_gwh"] == pytest.approx(0.0275)
+    assert tab.loc["BA", "eng_energetica_gwh"] == pytest.approx(0.005)
+    assert tab.loc["BA", "eng_confiabilidade_gwh"] == pytest.approx(0.015)
+    assert tab.loc["BA", "eng_eletrica_gwh"] == pytest.approx(0.0075)
+    assert tab.loc["BA", "taxa_corte"] == pytest.approx(27.5 / 40)
+    assert tab.loc["CE", "eng_gwh"] == 0.0 and tab.loc["CE", "energia_gerada_gwh"] == pytest.approx(
+        0.004
+    )
+    assert metricas.eng_por_uf(q, "2025-03").empty
+
+    temporada = pd.DataFrame(
+        {
+            "uf": ["BA", "PI"],
+            "ad_mw": [100.0, None],
+            "advc_mw": [None, None],
+            "pc_mw": [None, None],
+            "inab_mw": [300.0, 50.0],
+        }
+    )
+    cruz = metricas.cruzar_temporada(tab.reset_index(), temporada).set_index("uf")
+    assert set(cruz.index) == {"BA", "CE", "PI"}
+    assert cruz.loc["BA", "cadastrado_mw"] == 400.0 and cruz.loc[
+        "BA", "frac_inab"
+    ] == pytest.approx(0.75)
+    assert cruz.loc["PI", "frac_inab"] == pytest.approx(1.0) and cruz.loc["PI", "eng_gwh"] == 0.0
+    assert pd.isna(cruz.loc["CE", "frac_inab"])
+    rho, n = metricas.spearman_taxa_inabilitacao(cruz.reset_index())
+    assert n == 1 and rho != rho  # so BA tem os dois dados -> NaN
+
+
+def test_spearman_sem_scipy():
+    import pandas as pd
+
+    cruz = pd.DataFrame(
+        {
+            "uf": list("ABCD"),
+            "taxa_corte": [0.1, 0.2, 0.3, 0.4],
+            "frac_inab": [0.0, 0.5, 0.6, 1.0],
+            "eng_gwh": [1, 1, 1, 1],
+            "energia_gerada_gwh": [1, 1, 1, 1],
+        }
+    )
+    rho, n = metricas.spearman_taxa_inabilitacao(cruz)
+    assert n == 4 and rho == pytest.approx(1.0)
+    cruz["frac_inab"] = [1.0, 0.6, 0.5, 0.0]
+    assert metricas.spearman_taxa_inabilitacao(cruz)[0] == pytest.approx(-1.0)

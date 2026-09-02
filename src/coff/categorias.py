@@ -21,6 +21,7 @@ class Categoria:
     categoria: str
     descricao_ons: str
     definicao_operativa: str
+    rotulo: str = ""  # nome de exibicao (com acento e inicial maiuscula) para figuras
 
 
 CATEGORIAS: tuple[Categoria, ...] = (
@@ -29,24 +30,28 @@ CATEGORIAS: tuple[Categoria, ...] = (
         "energetica",
         "Razao energetica",
         "controle carga-frequencia do SIN; restricao sistemica",
+        "Energética",
     ),
     Categoria(
         "CNF",
         "confiabilidade",
         "Razao de atendimento a requisitos de confiabilidade",
         "limites de intercambio e inequacoes operativas",
+        "Confiabilidade",
     ),
     Categoria(
         "REL",
         "eletrica",
         "Razao de indisponibilidade externa (eletrica)",
         "indisponibilidade externa a usina (criterio N-1)",
+        "Elétrica",
     ),
     Categoria(
         "PAR",
         "parecer de acesso",
         "Restricao indicada no parecer de acesso",
         "restricao indicada no parecer de acesso; sem ocorrencias em jul/2026",
+        "Parecer de acesso",
     ),
 )
 
@@ -57,6 +62,9 @@ ORIGENS_CONHECIDAS: frozenset[str] = frozenset(ORIGENS)
 
 # ordem canonica de exibicao (figuras, tabelas)
 ORDEM_CATEGORIAS: tuple[str, ...] = tuple(c.categoria for c in CATEGORIAS)
+# rotulos de exibicao (inicial maiuscula, com acento) por categoria e por codigo de origem
+ROTULOS_CATEGORIA: dict[str, str] = {c.categoria: c.rotulo for c in CATEGORIAS}
+ROTULOS_ORIGEM: dict[str, str] = {"local": "Local", "sistemica": "Sistêmica"}
 
 _POR_CODIGO = {c.codigo: c for c in CATEGORIAS}
 

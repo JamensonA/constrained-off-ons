@@ -162,7 +162,61 @@ def etapa_metricas(args: argparse.Namespace, q, rel_carga, delta_t_h: float) -> 
     )
     _substituir_bloco(docs / "metodologia.md", "resumo_anual", _tabela_md(t_anual.round(2)))
     etapa_validacao_externa(docs, q, t_cat)
-    log.info("metricas: 5 figuras em docs/figuras, CSVs e tabela de sensibilidade em docs/")
+    etapa_temporada(docs, q, rodape, args)
+    log.info("metricas: 7 figuras em docs/figuras, CSVs e tabela de sensibilidade em docs/")
+
+
+def etapa_temporada(docs: Path, q, rodape: str, args: argparse.Namespace | None = None) -> None:
+    """Cruzamento ENG por UF (2025-01 -> ultimo mes) x 1a Temporada de Acesso 2026 (NT 02)."""
+    import pandas as pd
+
+    eng_uf = metricas.eng_por_uf(q, "2025-01")
+    eng_uf.round(4).to_csv(docs / "eng_por_uf.csv", index=False)
+    temporada = pd.read_csv(docs / "temporada_acesso_2026_nt02.csv")
+    cruz = metricas.cruzar_temporada(eng_uf, temporada)
+    cruz.round(4).to_csv(docs / "cruzamento_temporada.csv", index=False)
+    rho, n = metricas.spearman_taxa_inabilitacao(cruz)
+    rodape2 = (
+        "Fonte: ONS, Portal de Dados Abertos (restricao_coff_eolica_usi, "
+        "restricao_coff_fotovoltaica); referência: "
+        + (args.referencia if args else "coalesce")
+        + "  |  Temporada: ONS, NT-ONS DPL 0083/2026 (1ª Temporada de Acesso 2026), "
+        "infográfico, extrato de 01/09/2026"
+    )
+    figuras.fig6_temporada_x_eng(cruz, docs / "figuras" / "fig6_temporada_x_eng.png", rodape2)
+    figuras.fig7_taxa_corte_x_inabilitacao(
+        cruz, docs / "figuras" / "fig7_taxa_corte_x_inabilitacao.png", rodape2, rho, n
+    )
+    tab = cruz[
+        [
+            "uf",
+            "eng_gwh",
+            "energia_gerada_gwh",
+            "taxa_corte",
+            "cadastrado_mw",
+            "inab_mw",
+            "frac_inab",
+        ]
+    ].copy()
+    tab["taxa_corte"] = (100 * tab["taxa_corte"]).round(1)
+    tab["frac_inab"] = (100 * tab["frac_inab"]).round(1)
+    tab = tab.round(1)
+    tab.columns = [
+        "UF",
+        "ENG (GWh)",
+        "gerada (GWh)",
+        "taxa (%)",
+        "cadastrado (MW)",
+        "INAB (MW)",
+        "INAB (%)",
+    ]
+    _substituir_bloco(
+        docs / "metodologia.md",
+        "temporada",
+        f"Spearman(taxa de corte, fracao inabilitada) = **{rho:.2f}** "
+        f"(n = {n} UFs com os dois dados).\n\n" + _tabela_md(tab),
+    )
+    log.info("temporada: Spearman = %.3f (n = %d)", rho, n)
 
 
 def etapa_validacao_externa(docs: Path, q, t_cat) -> None:

@@ -1,15 +1,16 @@
 # Metodologia
 
-Documento vivo: preenchido gate a gate (G1 carga, G2 qualificacao, G3 metricas/sensibilidade, G4 validacao externa).
+Documento vivo, preenchido gate a gate (G1 carga, G2 qualificacao, G3 metricas e sensibilidade, G4 validacao externa).
 
 ## Fontes e janela
 
 - Portal de dados abertos do ONS, pacotes CKAN `restricao_coff_eolica_usi` (EOL) e `restricao_coff_fotovoltaica` (UFV): dados **agregados por usina/conjunto**, semi-horarios (delta t = 30 min, inferido e verificado na carga).
+- Download dos dados: 2026-09-02 (data registrada aqui; as figuras 6 e 7 nao a repetem no rodape).
 - Janela: 2023-01 ate o ultimo mes publicado (EOL 2023_01→2026_08, 44 meses; UFV 2024_04→2026_08, 29 meses). Detalhes em `relatorio_carga.md`.
 
 ## Qualificacao (regras R1–R12)
 
-Implementadas em `src/coff/qualificar.py` exatamente como escritas na spec v2, secao 4. Nenhuma linha e descartada: cada registro recebe `restrito`, `qualificado`, `motivo` (o primeiro que falhar, na ordem abaixo) e flags informativas. As contagens completas, por fonte e por ano, estao em `relatorio_qualificacao.md` (gerado por `scripts/rodar.py`).
+Implementadas em `src/coff/qualificar.py` exatamente como escritas na spec v2, secao 4. Nenhuma linha e descartada. Cada registro recebe `restrito`, `qualificado`, `motivo` (o primeiro que falhar, na ordem abaixo) e flags informativas. As contagens completas, por fonte e por ano, estao em `relatorio_qualificacao.md` (gerado por `scripts/rodar.py`).
 
 | regra | criterio | efeito |
 |---|---|---|
@@ -30,7 +31,7 @@ Ordem de precedencia do `motivo`: instante_invalido > duplicata > sem_restricao 
 
 ## Metricas e sensibilidade
 
-ENG (energia nao gerada) por registro = `max(ref_ef - max(val_geracao, 0), 0) x delta t` nos registros qualificados; energia gerada = `max(val_geracao, 0) x delta t` em todos os registros; taxa de corte = ENG / (ENG + energia gerada). Agregacoes em `src/coff/metricas.py`; figuras em `src/coff/figuras.py`; CSVs em `docs/`.
+ENG (energia nao gerada) por registro = `max(ref_ef - max(val_geracao, 0), 0) x delta t` nos registros qualificados. Energia gerada = `max(val_geracao, 0) x delta t` em todos os registros. Taxa de corte = ENG / (ENG + energia gerada). Agregacoes em `src/coff/metricas.py`, figuras em `src/coff/figuras.py`, CSVs em `docs/`.
 
 ### Resumo anual
 
@@ -110,11 +111,44 @@ Duas referencias publicadas pelo ONS foram encontradas e comparadas com o result
 Leitura: o ONS publica percentuais apurados (com regras da REN ANEEL 1.030/2022 e reconsistencias) e nao a serie bruta; diferencas de alguns pontos percentuais sao esperadas. Nao foi encontrado um total mensal em GWh publicado pelo ONS por fonte.
 <!-- validacao:fim -->
 
+## Cruzamento com a 1a Temporada de Acesso 2026
+
+Fonte externa: ONS, **NT-ONS DPL 0083/2026** (1a Temporada de Acesso 2026, "NT 02"), infografico por UF, extrato de 01/09/2026, transcrito a mao em `temporada_acesso_2026_nt02.csv` (MW; vazio = nao informado no mapa). Legenda: **AD** = atendimento direto; **ADVC** = atendimento direto viavel condicionado; **PC** = processo competitivo; **INAB** = inabilitacao por falta de margem (somente geracao; a carga tem 0 MW inabilitado). Totais oficiais: AD 8.060 MW, ADVC 768 MW, PC 2.940 MW, INAB 9.280 MW. O mapa omite parcelas pequenas de AD e ADVC (soma transcrita de AD = 7.751 MW). INAB e PC batem com o total.
+
+Metrica: `eng_por_uf` calcula ENG por UF e categoria, energia gerada e taxa de corte na janela 2025-01 -> ultimo mes (`eng_por_uf.csv`). `cruzar_temporada` faz a juncao por UF (outer) e calcula `frac_inab = inab / (ad + advc + pc + inab)`. Resultado em `cruzamento_temporada.csv` e nas figuras 6 e 7.
+
+Ressalvas: o dado da Temporada e preliminar e nao contempla desistencias. INAB e so geracao. A ENG e realizada em 2025 e 2026 (MWh) e a Temporada e cadastro de 2026 (MW pretendidos). Sao grandezas diferentes. A comparacao e **geografica, nao causal**.
+
+<!-- temporada:inicio -->
+Spearman(taxa de corte, fracao inabilitada) = **0.19** (n = 10 UFs com os dois dados).
+
+| UF | ENG (GWh) | gerada (GWh) | taxa (%) | cadastrado (MW) | INAB (MW) | INAB (%) |
+|---|---|---|---|---|---|---|
+| RN | 19223.9 | 57509.4 | 25.1 | 953.6 | 798.2 | 83.7 |
+| BA | 17203.6 | 74083.5 | 18.8 | 6051.7 | 4684.4 | 77.4 |
+| MG | 7894.5 | 22601.6 | 25.9 | 1668.6 | 554.2 | 33.2 |
+| PI | 5922.8 | 34344.9 | 14.7 | 1488.4 | 1488.4 | 100.0 |
+| CE | 4857.9 | 14729.8 | 24.8 | nan | nan | nan |
+| PE | 1823.0 | 7937.3 | 18.7 | 594.3 | 473.6 | 79.7 |
+| PB | 1137.6 | 7087.9 | 13.8 | 848.5 | 848.5 | 100.0 |
+| SP | 757.0 | 3256.1 | 18.9 | 2250.0 | nan | 0.0 |
+| RS | 732.8 | 8671.5 | 7.8 | 1658.8 | nan | 0.0 |
+| MA | 315.9 | 2798.8 | 10.1 | nan | nan | nan |
+| GO | 100.3 | 356.8 | 21.9 | 140.0 | 140.0 | 100.0 |
+| SC | 58.4 | 847.9 | 6.4 | nan | nan | nan |
+| MS | 0.0 | 36.3 | 0.0 | 68.0 | nan | 0.0 |
+| PA | 0.0 | 0.0 | 0.0 | 36.0 | nan | 0.0 |
+| PR | 0.0 | 0.0 | 0.0 | 2378.0 | nan | 0.0 |
+| RJ | 0.0 | 0.0 | 0.0 | 517.2 | nan | 0.0 |
+| SE | 0.0 | 0.0 | 0.0 | 1300.0 | 300.0 | 23.1 |
+| AL | 0.0 | 0.0 | 0.0 | 364.5 | nan | 0.0 |
+<!-- temporada:fim -->
+
 ## Limitacoes
 
-- Os dados publicados pelo ONS fazem parte de um processo de consistencia recorrente e podem ser atualizados apos a publicacao; o cache local so e refeito com `--forcar`.
-- A coluna `dsc_restricao` (descricao textual da restricao) **so existe a partir de 2025_01** (EOL 2023_01→2024_12 e UFV 2024_04→2024_12 nao a possuem; 33 arquivos, criada nula) e **so e preenchida pelo ONS a partir de 2025_09**: de 2025_01 a 2025_08 a coluna existe mas esta vazia em todas as linhas. Por isso a metrica "top descricoes" (figura 5, `top_descricoes.csv`) cobre efetivamente 2025_09 em diante; a ENG dos registros restritos de 2025_01–2025_08 aparece como "(sem descricao)".
-- O codigo de razao **PAR** ("restricao indicada no parecer de acesso") consta do dicionario de dados, mas **nao ocorre em nenhum dos 73 meses x fonte** da janela (contagem mes a mes em `relatorio_carga.md`). E tratado como codigo conhecido e contado; a categoria "parecer de acesso" aparece vazia.
+- Os dados publicados pelo ONS fazem parte de um processo de consistencia recorrente e podem ser atualizados apos a publicacao. O cache local so e refeito com `--forcar`.
+- A coluna `dsc_restricao` (descricao textual da restricao) **so existe a partir de 2025_01** (EOL 2023_01→2024_12 e UFV 2024_04→2024_12 nao a possuem; 33 arquivos, criada nula) e **so e preenchida pelo ONS a partir de 2025_09**. De 2025_01 a 2025_08 a coluna existe e esta vazia em todas as linhas. Por isso a metrica "top descricoes" (figura 5, `top_descricoes.csv`) cobre 2025_09 em diante. A ENG dos registros restritos de 2025_01 a 2025_08 aparece como "(sem descricao)" na tabela e fica fora da figura 5.
+- O codigo de razao **PAR** ("restricao indicada no parecer de acesso") consta do dicionario de dados e **nao ocorre em nenhum dos 73 meses x fonte** da janela (contagem mes a mes em `relatorio_carga.md`). E tratado como codigo conhecido e contado. A categoria "parecer de acesso" aparece vazia.
 - Os conjuntos de usinas nao sao desagregados por usina individual (datasets `*_detail` fora do escopo).
-- Na eolica, usinas/conjuntos entram e saem do dataset ao longo da janela (153 a 164 por mes); a serie por usina nao e um painel balanceado.
-- A apuracao regulatoria (REN ANEEL 1.030/2022) nao e reproduzida: nao ha franquias nem regras de elegibilidade por usina; a ENG aqui e uma medida descritiva.
+- Na eolica, usinas e conjuntos entram e saem do dataset ao longo da janela (153 a 164 por mes). A serie por usina nao e um painel balanceado.
+- A apuracao regulatoria (REN ANEEL 1.030/2022) nao e reproduzida. Nao ha franquias nem regras de elegibilidade por usina. A ENG aqui e uma medida descritiva.
