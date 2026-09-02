@@ -82,7 +82,7 @@ Teste por razão da restrição: a taxa de corte de cada UF foi separada em parc
 
 ![Inabilitação × taxa de corte por razão](docs/figuras/fig8_inabilitacao_por_razao.png)
 
-**Fig. 8** — _(leitura do autor)_
+**Fig. 8** — Separando a taxa de corte por razão, a correlação com a inabilitação continua fraca: ρ = 0,24 para o corte de rede (CNF + REL) e 0,19 para o energético, ambos com p ≥ 0,5. Sem GO, que tem 140 MW cadastrados e 100% inabilitados, o corte de rede sobe para ρ = 0,52 e o energético vai a zero. É a direção esperada, mas com nove UFs não é conclusivo (p = 0,16). O que os dados mostram sem estatística: onde a Temporada deu margem para todo o cadastro, o corte é quase todo energético (SP: 18,3 de 18,9 pontos; GO: 21,8 de 21,9). Onde não há margem, a parcela de rede é maior (RN: 12,7 de 25,1). UF é uma escala grossa para restrição de rede; o teste adequado é por ponto de conexão, e fica como próximo passo.
 
 ## Limitações
 
