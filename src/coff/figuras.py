@@ -163,8 +163,12 @@ def fig4_perfil_hora_mes(perfil: pd.DataFrame, caminho: Path, rodape: str) -> Pa
 
 
 def fig5_top_descricoes(tab: pd.DataFrame, caminho: Path, rodape: str, n: int = 15) -> Path:
-    """Barras horizontais das N maiores descricoes de restricao por ENG (GWh)."""
-    tab = tab.head(n).iloc[::-1]
+    """Barras horizontais das N maiores descricoes de restricao por ENG (GWh).
+
+    A linha "(sem descricao)" (campo vazio de 2025_01 a 2025_08) fica fora da figura e
+    permanece apenas na tabela ``top_descricoes.csv``.
+    """
+    tab = tab[tab["dsc_restricao"] != "(sem descricao)"].head(n).iloc[::-1]
     fig, ax = _figura()
     cores = [CORES_CATEGORIA.get(c, "#777") for c in tab["categoria"]]
     rotulos = [
