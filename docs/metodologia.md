@@ -144,6 +144,29 @@ Spearman(taxa de corte, fracao inabilitada) = **0.19** (n = 10 UFs com os dois d
 | AL | 0.0 | 0.0 | 0.0 | 364.5 | nan | 0.0 |
 <!-- temporada:fim -->
 
+## Correlacao por razao da restricao
+
+Pergunta: a fracao inabilitada por falta de margem (Temporada de Acesso 2026, por UF) acompanha a taxa de corte **de rede** (CNF + REL) e nao a taxa **energetica** (ENE)? A hipotese e que a analise de margem e o corte de rede medem o mesmo limite fisico local, enquanto o corte energetico e sistemico.
+
+Taxas por UF (janela 2025-01 -> ultimo mes, mesma base de `eng_por_uf`), todas com o mesmo denominador (ENG total + energia gerada), de modo que `taxa_ene + taxa_rede = taxa_total`: `taxa_total`, `taxa_ene`, `taxa_rede` = (CNF + REL) / potencial, `taxa_cnf`, `taxa_rel`; e `share_rede` = (CNF + REL) / ENG total (composicao). Tabela em `cruzamento_por_razao.csv`.
+
+Estatistica: Spearman entre `frac_inab` e cada metrica, nas UFs com os dois dados. O p-valor e bicaudal e obtido por permutacao (enumeracao exata de todas as permutacoes quando n <= 8; caso contrario 100.000 permutacoes aleatorias com semente fixa), sem aproximacao assintotica. Analise de sensibilidade: a mesma tabela sem GO (140 MW cadastrados, 100 % inabilitados). Resultado em `correlacoes_por_razao.csv` e na figura 8.
+
+Ressalva: n = 10 (9 sem GO). Com esse tamanho de amostra, so correlacoes muito fortes (|rho| acima de ~0,65) atingem p < 0,05; a ausencia de significancia nao e evidencia de ausencia de relacao.
+
+<!-- por_razao:inicio -->
+| amostra | métrica | ρ | p | n | método |
+|---|---|---|---|---|---|
+| todas as UFs com os dois dados | taxa_total | 0.193 | 0.5971 | 10 | 100000 permutacoes |
+| todas as UFs com os dois dados | taxa_ene | 0.193 | 0.5953 | 10 | 100000 permutacoes |
+| todas as UFs com os dois dados | taxa_rede | 0.242 | 0.4984 | 10 | 100000 permutacoes |
+| todas as UFs com os dois dados | share_rede | 0.019 | 0.9727 | 10 | 100000 permutacoes |
+| sem GO (140 MW, 100 % inabilitado) | taxa_total | 0.111 | 0.7785 | 9 | 100000 permutacoes |
+| sem GO (140 MW, 100 % inabilitado) | taxa_ene | -0.009 | 0.9914 | 9 | 100000 permutacoes |
+| sem GO (140 MW, 100 % inabilitado) | taxa_rede | 0.519 | 0.1562 | 9 | 100000 permutacoes |
+| sem GO (140 MW, 100 % inabilitado) | share_rede | 0.23 | 0.5511 | 9 | 100000 permutacoes |
+<!-- por_razao:fim -->
+
 ## Limitacoes
 
 - Os dados publicados pelo ONS fazem parte de um processo de consistencia recorrente e podem ser atualizados apos a publicacao. O cache local so e refeito com `--forcar`.

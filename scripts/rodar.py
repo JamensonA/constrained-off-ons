@@ -16,6 +16,8 @@ sys.path.insert(0, str(RAIZ / "src"))
 
 import datetime as dt  # noqa: E402
 
+import pandas as pd  # noqa: E402
+
 from coff import carregar, download, figuras, metricas, qualificar  # noqa: E402
 
 log = logging.getLogger("coff")
@@ -163,7 +165,7 @@ def etapa_metricas(args: argparse.Namespace, q, rel_carga, delta_t_h: float) -> 
     _substituir_bloco(docs / "metodologia.md", "resumo_anual", _tabela_md(t_anual.round(2)))
     etapa_validacao_externa(docs, q, t_cat)
     etapa_temporada(docs, q, rodape, args)
-    log.info("metricas: 7 figuras em docs/figuras, CSVs e tabela de sensibilidade em docs/")
+    log.info("metricas: 8 figuras em docs/figuras, CSVs e tabela de sensibilidade em docs/")
 
 
 def etapa_temporada(docs: Path, q, rodape: str, args: argparse.Namespace | None = None) -> None:
@@ -217,6 +219,52 @@ def etapa_temporada(docs: Path, q, rodape: str, args: argparse.Namespace | None 
         f"(n = {n} UFs com os dois dados).\n\n" + _tabela_md(tab),
     )
     log.info("temporada: Spearman = %.3f (n = %d)", rho, n)
+    etapa_por_razao(docs, eng_uf, temporada, rodape2)
+
+
+TITULO_FIG8 = "Na escala de UF, nem o corte de rede se correlaciona com a inabilitação (n = 10)"
+
+
+def etapa_por_razao(docs: Path, eng_uf, temporada, rodape2: str) -> None:
+    """Teste fino: fracao inabilitada x taxa de corte por razao (CNF+REL vs ENE)."""
+    taxas = metricas.taxas_por_razao_uf(eng_uf)
+    cruz = metricas.cruzar_por_razao(taxas, temporada)
+    cruz.round(4).to_csv(docs / "cruzamento_por_razao.csv", index=False)
+    completa = metricas.tabela_correlacoes(cruz)
+    completa["amostra"] = "todas as UFs com os dois dados"
+    sem_go = metricas.tabela_correlacoes(cruz, excluir=("GO",))
+    sem_go["amostra"] = "sem GO (140 MW, 100 % inabilitado)"
+    tabela = pd.concat([completa, sem_go], ignore_index=True)
+    tabela.round(4).to_csv(docs / "correlacoes_por_razao.csv", index=False)
+    rho_rede_sem_go = float(sem_go.set_index("metrica").loc["taxa_rede", "rho"])
+    p_rede_sem_go = float(sem_go.set_index("metrica").loc["taxa_rede", "p"])
+    nota = (
+        f"GO: 140 MW, 100 % inabilitado; sem GO, ρ (rede) = {rho_rede_sem_go:.2f} "
+        f"e p = {p_rede_sem_go:.2f}"
+    ).replace(".", ",")
+    figuras.fig8_inabilitacao_por_razao(
+        cruz,
+        docs / "figuras" / "fig8_inabilitacao_por_razao.png",
+        rodape2,
+        completa,
+        TITULO_FIG8,
+        "GO",
+        nota,
+    )
+    md = tabela.copy()
+    md["rho"] = md["rho"].round(3)
+    md["p"] = md["p"].round(4)
+    md = md[["amostra", "metrica", "rho", "p", "n", "metodo"]]
+    md.columns = ["amostra", "métrica", "ρ", "p", "n", "método"]
+    _substituir_bloco(docs / "metodologia.md", "por_razao", _tabela_md(md))
+    log.info(
+        "por razao: rede rho=%.3f p=%.3f | ene rho=%.3f p=%.3f (n=%d)",
+        float(completa.loc[2, "rho"]),
+        float(completa.loc[2, "p"]),
+        float(completa.loc[1, "rho"]),
+        float(completa.loc[1, "p"]),
+        int(completa.loc[2, "n"]),
+    )
 
 
 def etapa_validacao_externa(docs: Path, q, t_cat) -> None:

@@ -1,0 +1,9 @@
+metrica,rho,p,n,metodo,amostra
+taxa_total,0.1926,0.5971,10,100000 permutacoes,todas as UFs com os dois dados
+taxa_ene,0.1926,0.5953,10,100000 permutacoes,todas as UFs com os dois dados
+taxa_rede,0.2423,0.4984,10,100000 permutacoes,todas as UFs com os dois dados
+share_rede,0.0186,0.9727,10,100000 permutacoes,todas as UFs com os dois dados
+taxa_total,0.1107,0.7785,9,100000 permutacoes,"sem GO (140 MW, 100 % inabilitado)"
+taxa_ene,-0.0085,0.9914,9,100000 permutacoes,"sem GO (140 MW, 100 % inabilitado)"
+taxa_rede,0.5193,0.1562,9,100000 permutacoes,"sem GO (140 MW, 100 % inabilitado)"
+share_rede,0.2298,0.5511,9,100000 permutacoes,"sem GO (140 MW, 100 % inabilitado)"

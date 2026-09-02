@@ -78,6 +78,12 @@ Cruzamento geográfico (não causal) entre a energia não gerada por UF em 2025-
 
 **Fig. 7** — Taxa de corte (2025–2026) e fração inabilitada na Temporada, por UF. A correlação é fraca. O Ceará aparece à parte: 4,9 TWh cortados e nenhum MW cadastrado.
 
+Teste por razão da restrição: a taxa de corte de cada UF foi separada em parcela de rede (CNF + REL) e parcela energética (ENE), com o mesmo denominador, e cada uma foi correlacionada com a fração inabilitada (Spearman, p por permutação; método e tabela em [`docs/metodologia.md`](docs/metodologia.md), dados em [`docs/correlacoes_por_razao.csv`](docs/correlacoes_por_razao.csv)).
+
+![Inabilitação × taxa de corte por razão](docs/figuras/fig8_inabilitacao_por_razao.png)
+
+**Fig. 8** — _(leitura do autor)_
+
 ## Limitações
 
 Os dados são sujeitos a reconsistência pelo ONS após a publicação. A apuração regulatória (REN ANEEL 1.030/2022) não é reproduzida: não há franquias, nem regras de elegibilidade por usina. Conjuntos (Tipo II-C) não são desagregados por usina. `dsc_restricao` só é preenchida desde set/2025. O código PAR consta do dicionário e não ocorre em nenhum dos 73 meses. Na eólica, usinas entram e saem do dataset ao longo da janela.

@@ -601,3 +601,105 @@ def fig7_taxa_corte_x_inabilitacao(
     fig.savefig(caminho, dpi=DPI, facecolor="white")
     plt.close(fig)
     return caminho
+
+
+def fig8_inabilitacao_por_razao(
+    cruz: pd.DataFrame,
+    caminho: Path,
+    rodape: str,
+    correlacoes: pd.DataFrame,
+    titulo: str,
+    destaque: str = "GO",
+    nota_destaque: str = "",
+) -> Path:
+    """Dois painéis: fração inabilitada × taxa de corte de rede (CNF + REL) e × taxa energética.
+
+    Mesmos eixos y e mesma escala de x; tamanho = MW cadastrados; ρ e p (permutação) em
+    cada painel; uma UF em destaque (a que muda o resultado quando excluída).
+    """
+    sub = cruz.dropna(subset=["frac_inab"]).copy()
+    fig, (ax1, ax2) = plt.subplots(
+        1,
+        2,
+        figsize=TAMANHO,
+        dpi=DPI,
+        facecolor="white",
+        sharey=True,
+        gridspec_kw={"wspace": 0.08},
+    )
+    xmax = max(100 * float(sub[["taxa_rede", "taxa_ene"]].max().max()) * 1.25, 10.0)
+    tamanhos = 60 + 1100 * sub["cadastrado_mw"] / max(float(sub["cadastrado_mw"].max()), 1.0)
+    corr = correlacoes.set_index("metrica")
+    paineis = [
+        (
+            ax1,
+            "taxa_rede",
+            "Taxa de corte de rede, CNF + REL (%)",
+            {"SP": (8, -13), "PB": (-24, 8)},
+        ),
+        (ax2, "taxa_ene", "Taxa de corte energética, ENE (%)", {"BA": (16, 2), "PB": (-24, 8)}),
+    ]
+    for ax, metrica, rotulo_x, deslocamentos in paineis:
+        ax.set_facecolor("white")
+        _limpar(ax, grade=False)
+        ax.grid(axis="y", color=CINZA_GRADE, linewidth=0.8)
+        ax.set_axisbelow(True)
+        xs = 100 * sub[metrica]
+        ys = 100 * sub["frac_inab"]
+        cores = [COR_DESTAQUE if uf == destaque else "#b5b5b5" for uf in sub["uf"]]
+        bordas = [COR_DESTAQUE if uf == destaque else "#8a8a8a" for uf in sub["uf"]]
+        ax.scatter(
+            xs, ys, s=tamanhos, color=cores, alpha=0.85, edgecolor=bordas, linewidth=0.8, zorder=3
+        )
+        for _, r in sub.iterrows():
+            e_destaque = r["uf"] == destaque
+            ax.annotate(
+                r["uf"],
+                (100 * r[metrica], 100 * r["frac_inab"]),
+                textcoords="offset points",
+                xytext=deslocamentos.get(r["uf"], (8, 6)),
+                fontsize=10,
+                color=CINZA_TITULO if e_destaque else CINZA_EIXO,
+                fontweight="bold" if e_destaque else "normal",
+            )
+        rho = float(corr.loc[metrica, "rho"])
+        pval = float(corr.loc[metrica, "p"])
+        n = int(corr.loc[metrica, "n"])
+        ax.text(
+            0.97,
+            0.04,
+            f"Spearman ρ = {rho:.2f}, p = {pval:.2f}, n = {n}".replace(".", ","),
+            transform=ax.transAxes,
+            ha="right",
+            va="bottom",
+            fontsize=11,
+            color=CINZA_TITULO,
+        )
+        ax.set_xlim(0, xmax)
+        ax.set_ylim(0, 108)
+        ax.set_xlabel(rotulo_x)
+    ax1.set_ylabel("Potência cadastrada inabilitada por falta de margem (%)")
+    if nota_destaque and destaque in set(sub["uf"]):
+        r = sub[sub["uf"] == destaque].iloc[0]
+        ax1.annotate(
+            nota_destaque,
+            (100 * r["taxa_rede"], 100 * r["frac_inab"]),
+            textcoords="offset points",
+            xytext=(40, -34),
+            fontsize=10,
+            color=COR_DESTAQUE,
+            arrowprops={"arrowstyle": "-", "color": COR_DESTAQUE, "lw": 0.9, "shrinkB": 8},
+        )
+    _titulo(
+        fig,
+        titulo,
+        "Fração inabilitada (Temporada 2026) por UF × taxa de corte 2025-01 → 2026-08 por razão, "
+        "mesmo denominador · tamanho = MW cadastrados · p por permutação (100 000)",
+    )
+    _rodape_fontes(fig, rodape.split("  |  "))
+    fig.subplots_adjust(left=0.07, right=0.98, top=0.88, bottom=0.12)
+    caminho = Path(caminho)
+    caminho.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(caminho, dpi=DPI, facecolor="white")
+    plt.close(fig)
+    return caminho

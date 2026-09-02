@@ -146,3 +146,34 @@ def test_spearman_sem_scipy():
     assert n == 4 and rho == pytest.approx(1.0)
     cruz["frac_inab"] = [1.0, 0.6, 0.5, 0.0]
     assert metricas.spearman_taxa_inabilitacao(cruz)[0] == pytest.approx(-1.0)
+
+
+def test_taxas_por_razao_somam_a_taxa_total(q):
+    import pandas as pd
+
+    tab = metricas.taxas_por_razao_uf(metricas.eng_por_uf(q, "2025-01"))
+    assert list(tab["uf"]) == ["BA"]  # CE tem ENG = 0 e sai
+    linha = tab.iloc[0]
+    assert linha["taxa_ene"] + linha["taxa_rede"] == pytest.approx(linha["taxa_total"])
+    assert linha["taxa_cnf"] + linha["taxa_rel"] == pytest.approx(linha["taxa_rede"])
+    assert linha["taxa_total"] == pytest.approx(27.5 / 40)
+    assert linha["taxa_ene"] == pytest.approx(5 / 40)
+    assert linha["share_rede"] == pytest.approx(22.5 / 27.5)
+    temporada = pd.DataFrame(
+        {"uf": ["BA"], "ad_mw": [100.0], "advc_mw": [None], "pc_mw": [None], "inab_mw": [300.0]}
+    )
+    cruz = metricas.cruzar_por_razao(tab, temporada)
+    assert cruz.loc[0, "frac_inab"] == pytest.approx(0.75)
+
+
+def test_spearman_permutacao_extremos():
+    x = [1, 2, 3, 4, 5, 6, 7, 8]
+    rho, p, n, metodo = metricas.spearman_permutacao(x, x)  # monotonico perfeito
+    assert rho == pytest.approx(1.0) and n == 8 and metodo.startswith("exato")
+    assert p == pytest.approx(2 / 40320)  # so a identidade e a inversa atingem |rho| = 1
+    rho0, p0, _, _ = metricas.spearman_permutacao([1, 2, 3, 4], [2, 4, 1, 3])  # rho = 0
+    assert rho0 == pytest.approx(0.0) and p0 == 1.0
+    rho9, p9, n9, metodo9 = metricas.spearman_permutacao(list(range(9)), list(range(9)), 2000)
+    assert n9 == 9 and "2000" in metodo9 and rho9 == pytest.approx(1.0) and p9 < 0.01
+    _, pn, _, m = metricas.spearman_permutacao([1, 2], [1, 2])
+    assert m == "insuficiente" and pn != pn

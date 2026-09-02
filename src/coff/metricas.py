@@ -7,6 +7,10 @@ e devolvem DataFrames pequenos prontos para figuras, CSVs e testes.
 
 from __future__ import annotations
 
+import itertools
+import math
+
+import numpy as np
 import pandas as pd
 
 from coff.categorias import ORDEM_CATEGORIAS
@@ -283,3 +287,126 @@ def spearman_taxa_inabilitacao(cruz: pd.DataFrame) -> tuple[float, int]:
     postos_x = sub["taxa_corte"].rank(method="average")
     postos_y = sub["frac_inab"].rank(method="average")
     return float(postos_x.corr(postos_y)), n
+
+
+# ---------------------------------------------------------------------------
+# Teste fino: inabilitacao x taxa de corte por razao da restricao
+# ---------------------------------------------------------------------------
+
+METRICAS_POR_RAZAO: tuple[str, ...] = ("taxa_total", "taxa_ene", "taxa_rede", "share_rede")
+
+
+def taxas_por_razao_uf(eng_uf: pd.DataFrame) -> pd.DataFrame:
+    """Taxas de corte por UF decompostas por razao, com denominador comum.
+
+    Recebe a saida de ``eng_por_uf`` e devolve, para UFs com ENG > 0: ``taxa_total``,
+    ``taxa_ene``, ``taxa_rede`` (CNF + REL), ``taxa_cnf``, ``taxa_rel`` (todas sobre a
+    mesma energia potencial ENG_total + energia gerada, logo taxa_ene + taxa_rede =
+    taxa_total) e ``share_rede`` = (CNF + REL) / ENG_total.
+    """
+    t = eng_uf[eng_uf["eng_gwh"] > 0].copy()
+    potencial = t["eng_gwh"] + t["energia_gerada_gwh"]
+    rede = t["eng_confiabilidade_gwh"] + t["eng_eletrica_gwh"]
+    saida = pd.DataFrame(
+        {
+            "uf": t["uf"],
+            "eng_gwh": t["eng_gwh"],
+            "eng_ene_gwh": t["eng_energetica_gwh"],
+            "eng_cnf_gwh": t["eng_confiabilidade_gwh"],
+            "eng_rel_gwh": t["eng_eletrica_gwh"],
+            "energia_gerada_gwh": t["energia_gerada_gwh"],
+            "taxa_total": t["eng_gwh"] / potencial,
+            "taxa_ene": t["eng_energetica_gwh"] / potencial,
+            "taxa_rede": rede / potencial,
+            "taxa_cnf": t["eng_confiabilidade_gwh"] / potencial,
+            "taxa_rel": t["eng_eletrica_gwh"] / potencial,
+            "share_rede": rede / t["eng_gwh"],
+        }
+    )
+    return saida.sort_values("eng_gwh", ascending=False).reset_index(drop=True)
+
+
+def cruzar_por_razao(taxas: pd.DataFrame, temporada: pd.DataFrame) -> pd.DataFrame:
+    """Junta as taxas por razao com a Temporada (``frac_inab`` como na figura 7)."""
+    t = temporada.copy()
+    t["uf"] = t["uf"].astype(str).str.strip().str.upper()
+    parcelas = ["ad_mw", "advc_mw", "pc_mw", "inab_mw"]
+    for c in parcelas:
+        t[c] = pd.to_numeric(t[c], errors="coerce")
+    t["cadastrado_mw"] = t[parcelas].fillna(0.0).sum(axis=1)
+    t["frac_inab"] = (
+        t["inab_mw"].fillna(0.0) / t["cadastrado_mw"].where(t["cadastrado_mw"] > 0)
+    ).where(t["cadastrado_mw"] > 0)
+    return taxas.merge(t[["uf", "cadastrado_mw", "inab_mw", "frac_inab"]], on="uf", how="left")
+
+
+def _postos(v: np.ndarray) -> np.ndarray:
+    """Postos com media em empates (equivalente a ``Series.rank(method="average")``)."""
+    ordem = np.argsort(v, kind="mergesort")
+    postos = np.empty(len(v), dtype=float)
+    postos[ordem] = np.arange(1, len(v) + 1, dtype=float)
+    _, inverso, contagens = np.unique(v, return_inverse=True, return_counts=True)
+    if (contagens > 1).any():
+        soma = np.zeros(len(contagens))
+        np.add.at(soma, inverso, postos)
+        postos = (soma / contagens)[inverso]
+    return postos
+
+
+def _spearman(x: np.ndarray, y: np.ndarray) -> float:
+    rx = _postos(np.asarray(x, dtype=float))
+    ry = _postos(np.asarray(y, dtype=float))
+    rx = rx - rx.mean()
+    ry = ry - ry.mean()
+    den = math.sqrt(float((rx**2).sum() * (ry**2).sum()))
+    return float((rx * ry).sum() / den) if den > 0 else float("nan")
+
+
+def spearman_permutacao(
+    x, y, n_permutacoes: int = 100_000, semente: int = 0, limite_exato: int = 8
+) -> tuple[float, float, int, str]:
+    """Spearman com p-valor bicaudal por permutacao.
+
+    Enumeracao exata de todas as n! permutacoes quando n <= ``limite_exato``; senao
+    ``n_permutacoes`` permutacoes aleatorias (semente fixa). p = fracao de permutacoes
+    com |rho| >= |rho observado| (a permutacao identidade conta no caso aleatorio).
+    Devolve ``(rho, p, n, metodo)``; com n < 3, rho e p sao NaN.
+    """
+    x = np.asarray(x, dtype=float)
+    y = np.asarray(y, dtype=float)
+    n = len(x)
+    if n < 3:
+        return float("nan"), float("nan"), n, "insuficiente"
+    rho = _spearman(x, y)
+    if math.isnan(rho):
+        return rho, float("nan"), n, "indefinido"
+    alvo = abs(rho) - 1e-12
+    if n <= limite_exato:
+        total = 0
+        extremos = 0
+        for perm in itertools.permutations(range(n)):
+            total += 1
+            if abs(_spearman(x, y[list(perm)])) >= alvo:
+                extremos += 1
+        return rho, extremos / total, n, f"exato ({total} permutacoes)"
+    rng = np.random.default_rng(semente)
+    extremos = 1  # a permutacao observada
+    for _ in range(n_permutacoes):
+        if abs(_spearman(x, rng.permutation(y))) >= alvo:
+            extremos += 1
+    return rho, extremos / (n_permutacoes + 1), n, f"{n_permutacoes} permutacoes"
+
+
+def tabela_correlacoes(
+    cruz: pd.DataFrame, excluir: tuple[str, ...] = (), n_permutacoes: int = 100_000
+) -> pd.DataFrame:
+    """Tabela metrica x (rho, p, n, metodo) de ``frac_inab`` contra as taxas por razao."""
+    sub = cruz.dropna(subset=["frac_inab"])
+    sub = sub[~sub["uf"].isin(excluir)]
+    linhas = []
+    for metrica in METRICAS_POR_RAZAO:
+        rho, p, n, metodo = spearman_permutacao(
+            sub[metrica].to_numpy(), sub["frac_inab"].to_numpy(), n_permutacoes
+        )
+        linhas.append({"metrica": metrica, "rho": rho, "p": p, "n": n, "metodo": metodo})
+    return pd.DataFrame(linhas)
