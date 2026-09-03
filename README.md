@@ -84,6 +84,14 @@ Teste por razão da restrição: a taxa de corte de cada UF foi separada em parc
 
 **Fig. 8** — Separando a taxa de corte por razão, a correlação com a inabilitação continua fraca: ρ = 0,24 para o corte de rede (CNF + REL) e 0,19 para o energético, ambos com p ≥ 0,5. Sem GO, que tem 140 MW cadastrados e 100% inabilitados, o corte de rede sobe para ρ = 0,52 e o energético vai a zero. É a direção esperada, mas com nove UFs não é conclusivo (p = 0,16). O que os dados mostram sem estatística: onde a Temporada deu margem para todo o cadastro, o corte é quase todo energético (SP: 18,3 de 18,9 pontos; GO: 21,8 de 21,9). Onde não há margem, a parcela de rede é maior (RN: 12,7 de 25,1). UF é uma escala grossa para restrição de rede; o teste adequado é por ponto de conexão, e fica como próximo passo.
 
+## Extra 2 — por ponto de conexão
+
+Cruzamento nominal entre os barramentos candidatos do segmento geração da 1ª Temporada de Acesso 2026 (NT-ONS DPL 0083/2026) e a energia não gerada das usinas conectadas a cada um, com o mapa usina → ponto de conexão construído a partir do cadastro aberto do ONS (`modalidade-usina` + `usina_conjunto`). Etapas, regras de adjacência e de coincidência em [`docs/metodologia.md`](docs/metodologia.md); tabelas em [`docs/cruzamento_pac.csv`](docs/cruzamento_pac.csv), [`docs/mapa_usina_pac.csv`](docs/mapa_usina_pac.csv) e [`docs/nt02_barramentos_geracao.csv`](docs/nt02_barramentos_geracao.csv).
+
+![Barramentos da NT 02 × energia não gerada](docs/figuras/fig9_barramentos_nt02.png)
+
+**Fig. 9** — Dos 13 barramentos candidatos inabilitados pela NT 02 que têm usinas com corte, 11 apresentam coincidência entre o corte de rede das usinas e o fator limitante da NT. Há dois padrões no Nordeste. Em GDO, SLD, QND, SDS e BDD o corte de rede é quase todo por intercâmbio ou corredor de exportação (86% a 98%), o mesmo limite que a NT invoca. Em JCT, CID e TRS o corte de rede é majoritariamente local e nomeia a linha (LT 500 kV Açu III – Jaguaruana II; Campina Grande III – Ceará Mirim II; SE Touros). A NT trata os oito com a mesma frase; a operação mostra dois problemas. As duas exceções, em MG, são inabilitadas por colapso de tensão na malha 500 kV GO–MG–SP, um critério de contingência; os cortes reais vêm da transformação de Rio Novo do Sul e de Itabira. O maior ponto de corte do país, Açu III 500 kV (4,0 TWh, 10 conjuntos), não tem barramento candidato de geração nesta Temporada.
+
 ## Limitações
 
 Os dados são sujeitos a reconsistência pelo ONS após a publicação. A apuração regulatória (REN ANEEL 1.030/2022) não é reproduzida: não há franquias, nem regras de elegibilidade por usina. Conjuntos (Tipo II-C) não são desagregados por usina. `dsc_restricao` só é preenchida desde set/2025. O código PAR consta do dicionário e não ocorre em nenhum dos 73 meses. Na eólica, usinas entram e saem do dataset ao longo da janela.

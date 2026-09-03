@@ -703,3 +703,115 @@ def fig8_inabilitacao_por_razao(
     fig.savefig(caminho, dpi=DPI, facecolor="white")
     plt.close(fig)
     return caminho
+
+
+def _elemento_destaque(condicao: str) -> str:
+    """Elemento das descricoes de corte citado na condicao B (primeiro item), ou vazio."""
+    m = re.search(r"B: [^()]*\(([^;)]+)", condicao or "")
+    if not m:
+        return ""
+    el = m.group(1).strip()
+    el = re.sub(r"\s*\(\d[\d.\-]*.*$", "", el)  # tira numeros de SGI entre parenteses
+    el = el.replace("LT 's", "LTs").rstrip(" .")
+    return el[:48] + ("…" if len(el) > 48 else "")
+
+
+def _fator_curto(fator: str, elementos_citados: str, resultado: str) -> str:
+    f = (fator or "").lower()
+    if "intercâmbio ou de fluxo" in f or "incapacidade de acréscimo" in f:
+        return "limites de intercâmbio/fluxo"
+    if "não foram encontradas violações" in f:
+        return "sem violações"
+    if "colapso de tensão" in f:
+        return "colapso de tensão, malha 500 kV GO-MG-SP"
+    el = (elementos_citados or "").split(";")[0].strip()
+    texto = el or (fator or "")
+    if len(texto) > 50:
+        texto = texto[:50].rsplit(" ", 1)[0] + "…"
+    return texto.rstrip(" ,.;")
+
+
+def fig9_barramentos_nt02(
+    cruz: pd.DataFrame,
+    caminho: Path,
+    rodape: str,
+    titulo: str,
+    subtitulo: str,
+    extra: str | None = None,
+) -> Path:
+    """Barras horizontais por barramento (ENG > 0) empilhadas por categoria, com resultado e
+    fator limitante à direita; elemento das descrições de corte em destaque nas coincidências.
+
+    ``extra``: linha em cinza abaixo do último barramento, separada por linha fina.
+    """
+    tab = cruz[cruz["eng_gwh"] > 0].sort_values("eng_gwh", ascending=True).reset_index(drop=True)
+    n = len(tab)
+    fig, ax = plt.subplots(figsize=TAMANHO, dpi=DPI, facecolor="white")
+    ax.set_facecolor("white")
+    _limpar(ax, grade=False)
+    ax.grid(axis="x", color=CINZA_GRADE, linewidth=0.8)
+    ax.set_axisbelow(True)
+    y = list(range(1, n + 1)) if extra else list(range(n))
+    base = pd.Series(0.0, index=tab.index)
+    for cat, col in (
+        ("energetica", "eng_energetica_gwh"),
+        ("confiabilidade", "eng_confiabilidade_gwh"),
+        ("eletrica", "eng_eletrica_gwh"),
+    ):
+        ax.barh(y, tab[col], left=base, color=TONS_CATEGORIA[cat], height=0.72)
+        base = base + tab[col]
+    maximo = float(base.max())
+    # rotulos das series na maior barra
+    topo = tab.index[-1]
+    acum = 0.0
+    for cat, col in (
+        ("energetica", "eng_energetica_gwh"),
+        ("confiabilidade", "eng_confiabilidade_gwh"),
+        ("eletrica", "eng_eletrica_gwh"),
+    ):
+        v = float(tab.loc[topo, col])
+        if v > 0.08 * maximo:
+            ax.text(
+                acum + v / 2,
+                y[-1],
+                NOMES_CURTOS[cat],
+                ha="center",
+                va="center",
+                fontsize=9,
+                color="white" if cat != "eletrica" else "#333333",
+            )
+        acum += v
+    rotulos = [f"{r.barramento} ({r.uf})" for r in tab.itertuples()]
+    ax.set_yticks(y)
+    ax.set_yticklabels(rotulos, fontsize=10)
+    for lab, r in zip(ax.get_yticklabels(), tab.itertuples(), strict=True):
+        if bool(r.coincidencia):
+            lab.set_fontweight("bold")
+            lab.set_color(CINZA_TITULO)
+    # texto a direita: resultado + fator; elemento das descricoes em destaque
+    x_txt = maximo * 1.03
+    for yi, r in zip(y, tab.itertuples(), strict=True):
+        fator = _fator_curto(r.fator_limitante, getattr(r, "elementos_citados", ""), r.resultado)
+        ax.text(
+            x_txt, yi + 0.16, f"{r.resultado} · {fator}", va="center", fontsize=9, color=CINZA_EIXO
+        )
+        if bool(r.coincidencia):
+            el = _elemento_destaque(r.condicao)
+            if not el:
+                frac = float(r.frac_rede_exportacao) if pd.notna(r.frac_rede_exportacao) else 0.0
+                el = f"corte de rede {frac:.0%} em intercâmbio/corredor de exportação"
+            ax.text(x_txt, yi - 0.2, f"corte: {el}", va="center", fontsize=9, color=COR_DESTAQUE)
+    if extra:
+        ax.axhline(0.4, color=CINZA_EIXO, linewidth=0.6)
+        ax.text(0, 0, extra, va="center", ha="left", fontsize=10, color=CINZA_SUBTITULO)
+        ax.set_ylim(-0.7, n + 0.7)
+    ax.set_xlim(0, maximo * 2.05)
+    ax.set_xlabel("Energia não gerada, 2025-01 → 2026-08 (GWh)")
+    _titulo(fig, titulo, subtitulo)
+    _rodape_fontes(fig, rodape.split("  |  "))
+    fig.subplots_adjust(left=0.19, right=0.99, top=0.90, bottom=0.10)
+    caminho = Path(caminho)
+    caminho.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(caminho, dpi=DPI, facecolor="white")
+    plt.close(fig)
+    return caminho

@@ -177,7 +177,7 @@ def etapa_metricas(args: argparse.Namespace, q, rel_carga, delta_t_h: float) -> 
     etapa_descricoes(docs, q)
     etapa_mapa_pac(docs, q, Path(args.dados) / "externo")
     etapa_cruzamento_pac(docs, q)
-    log.info("metricas: 8 figuras em docs/figuras, CSVs e tabela de sensibilidade em docs/")
+    log.info("metricas: 9 figuras em docs/figuras, CSVs e tabela de sensibilidade em docs/")
 
 
 def etapa_temporada(docs: Path, q, rodape: str, args: argparse.Namespace | None = None) -> None:
@@ -442,12 +442,51 @@ def etapa_cruzamento_pac(docs: Path, q) -> None:
         f"{int(com_eng['coincidencia'].sum())} de {len(com_eng)}.\n\n" + _tabela_md(md)
     )
     _substituir_bloco(docs / "metodologia.md", "cruzamento_pac", texto)
+    etapa_fig9(docs, cruz)
     log.info(
         "cruzamento PAC: %d barramentos, %d com ENG, %d coincidencias; siglas faltantes: %s",
         len(cruz),
         len(com_eng),
         int(com_eng["coincidencia"].sum()),
         faltantes or "nenhuma",
+    )
+
+
+TITULO_FIG9 = (
+    "Nos barramentos inabilitados do Nordeste, o corte de rede aponta o mesmo corredor "
+    "que a NT 02 (11 de 13)"
+)
+SUBTITULO_FIG9 = (
+    "ENG 2025-01 → 2026-08 das usinas de cada barramento candidato da Temporada 2026 "
+    "(PAC do cadastro + adjacências por regra), por categoria · à direita: resultado da NT "
+    "e fator limitante"
+)
+
+
+def etapa_fig9(docs: Path, cruz) -> None:
+    """Figura 9: barramentos da NT 02 x ENG por categoria, com resultado e fator limitante."""
+    pacs = pd.read_csv(docs / "pacs_distintos.csv")
+    extra = None
+    acu = pacs[pacs["pac_nome"] == "ACU 3"]
+    if not acu.empty:
+        r = acu.iloc[0]
+        extra = (
+            f"Açu III 500 kV — {r['eng_gwh'] / 1000:.1f} TWh, "
+            f"{int(r['conjuntos_usinas'])} conjuntos, sem barramento candidato"
+        ).replace(".", ",", 1)
+    rodape = (
+        "Fonte: ONS, Portal de Dados Abertos (restricao_coff_eolica_usi, "
+        "restricao_coff_fotovoltaica); cadastro: modalidade-usina e usina_conjunto"
+        "  |  Temporada: ONS, NT-ONS DPL 0083/2026 (1ª Temporada de Acesso 2026), "
+        "tabelas 4-2, 4-3 e seção 6"
+    )
+    figuras.fig9_barramentos_nt02(
+        cruz,
+        docs / "figuras" / "fig9_barramentos_nt02.png",
+        rodape,
+        TITULO_FIG9,
+        SUBTITULO_FIG9,
+        extra,
     )
 
 
