@@ -18,7 +18,7 @@ import datetime as dt  # noqa: E402
 
 import pandas as pd  # noqa: E402
 
-from coff import carregar, download, figuras, metricas, qualificar  # noqa: E402
+from coff import carregar, descricoes, download, figuras, metricas, qualificar  # noqa: E402
 
 log = logging.getLogger("coff")
 
@@ -165,6 +165,7 @@ def etapa_metricas(args: argparse.Namespace, q, rel_carga, delta_t_h: float) -> 
     _substituir_bloco(docs / "metodologia.md", "resumo_anual", _tabela_md(t_anual.round(2)))
     etapa_validacao_externa(docs, q, t_cat)
     etapa_temporada(docs, q, rodape, args)
+    etapa_descricoes(docs, q)
     log.info("metricas: 8 figuras em docs/figuras, CSVs e tabela de sensibilidade em docs/")
 
 
@@ -220,6 +221,53 @@ def etapa_temporada(docs: Path, q, rodape: str, args: argparse.Namespace | None 
     )
     log.info("temporada: Spearman = %.3f (n = %d)", rho, n)
     etapa_por_razao(docs, eng_uf, temporada, rodape2)
+
+
+def etapa_descricoes(docs: Path, q) -> None:
+    """Etapa 1 do cruzamento por PAC: ENG por descricao normalizada e por elemento (NE)."""
+    tab = descricoes.tabela_descricoes(q, "2025-09")
+    tab.round(4).to_csv(docs / "eng_por_descricao.csv", index=False)
+    por_el, resumo = descricoes.eng_rede_ne_por_elemento(q, "2025-09")
+    por_el.round(4).to_csv(docs / "eng_cnf_ne_por_elemento.csv", index=False)
+    top = tab.head(20)[
+        [
+            "descricao",
+            "tipo",
+            "elemento",
+            "classe",
+            "categoria_principal",
+            "origem_principal",
+            "eng_gwh",
+            "usinas",
+            "meses",
+        ]
+    ].copy()
+    top["descricao"] = top["descricao"].str.slice(0, 90)
+    top["eng_gwh"] = top["eng_gwh"].round(1)
+    top.columns = [
+        "descrição",
+        "tipo",
+        "elemento",
+        "classe",
+        "categoria",
+        "origem",
+        "ENG (GWh)",
+        "usinas",
+        "meses",
+    ]
+    res = resumo.copy()
+    res["eng_gwh"] = res["eng_gwh"].round(1)
+    res["fracao"] = (100 * res["fracao"]).round(1)
+    res.columns = ["classe efetiva", "ENG (GWh)", "fração (%)"]
+    texto = (
+        f"Descricoes distintas apos normalizacao: {len(tab)} "
+        "(registros qualificados desde 2025-09).\n\n"
+        "**20 maiores descricoes por ENG**\n\n" + "\n".join(_tabela_md(top)) + "\n\n"
+        "**ENG de rede (CNF + REL) no Nordeste por classe de elemento**\n\n"
+        + "\n".join(_tabela_md(res))
+    )
+    _substituir_bloco(docs / "metodologia.md", "descricoes", texto)
+    log.info("descricoes: %d distintas; NE rede: %s", len(tab), res.to_dict("records"))
 
 
 TITULO_FIG8 = "Na escala de UF, nem o corte de rede se correlaciona com a inabilitação (n = 10)"

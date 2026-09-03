@@ -1,0 +1,80 @@
+classe,elemento,usinas,registros,origem_principal,eng_gwh,classe_efetiva
+local,Transformação 500/345 kV da SE Rio Novo do Sul,193,169170,sistemica,4099.2608,corredor de exportação
+local,LT 500 kV Açu III / Jaguaruana II,55,116810,local,3335.3864,local NE
+exportacao,FNESE,195,41999,sistemica,1640.2307,intercâmbio nomeado
+local,LTS 500 kV Açu III / Quixadá,88,95879,local,1563.1708,local NE
+local,LT 230 kV Itabira 4 / Itabira 5,187,14961,sistemica,529.4802,corredor de exportação
+local,LT 500 kV Jaguaruana II / Pacatuba,70,24442,local,503.9358,local NE
+exportacao,FNS+FNESE,194,16357,sistemica,413.1899,intercâmbio nomeado
+local,Fluxo Bahia Sudoeste,26,8894,local,150.5523,local NE
+outro,(sem elemento),127,5093,local,148.6629,outro
+local,LT 230 kV Bom Nome / Milagres,7,7055,local,146.2052,local NE
+exportacao,FNEN,125,3825,sistemica,145.5213,intercâmbio nomeado
+local,LT 230 kV Irecê / Morro do Chapéu II,27,3059,local,124.5239,local NE
+local,LT 345 kV Campos / Rio Novo do Sul C1,187,6296,sistemica,90.3682,corredor de exportação
+local,LT 500kV Poções III/Padre Paraíso,83,1552,sistemica,82.892,corredor de exportação
+local,LT 500 kV Campina Grande III / Ceará Mirim II,61,3361,local,72.2425,local NE
+local,TR 345/ 138 kV da SE Campos 2,186,5728,local,59.3419,local NE
+local,LT 500 kV Barreiras II / Buritirama,8,217,local,29.8631,local NE
+local,LT 500 kV Sobradinho / São João do Piauí,7,600,local,25.2592,local NE
+local,LT 500 kV Açu III / Milagres II,20,889,local,22.535,local NE
+local,Transformador 230 / 69 kV – 50 Mva – T1 da SE Bom Jesus da Lapa,4,4480,local,20.1335,local NE
+local,LT 500 kV Colinas / Ribeiro Gonçalves C1 e C2,14,457,sistemica,18.0922,corredor de exportação
+local,Fluxo Senhor do Bonfim II,2,1513,local,12.3426,local NE
+local,LT 230 kV Açu III / Mossoró II,20,990,local,11.8512,local NE
+local,Sub Curral Novo do Piaui II PI - SB 500 kV Curral Piaui II B1 PI (05B1),7,99,local,9.6426,local NE
+local,LT 230 kV Itabaiana / Itabaianinha,74,449,local,9.3667,local NE
+local,Transformador 230 / 138 kV – 55 Mva – T4,1,989,local,8.4229,local NE
+local,LT 500 kV Jaguaruana II / Acu III C V7 CE/RN (05V7),21,176,local,7.0007,local NE
+local,TR -CNP) + F(CHP2-PIC-P1) < 300 MW,7,45,local,5.7143,local NE
+local,"Controle dos fluxos de potência ativa nos TR1, 2, 3 e 4 de 500/230 kV da SE Curral Novo do Piauí II",7,70,local,5.4787,local NE
+frequencia,SIN,97,136,sistemica,5.0666,outro
+local,LT 230 kV Mauriti II / Milagres,9,610,local,4.1079,local NE
+local,Transformação 138/230 kV 04T4/04T5/04T6 Bom Nome,3,503,local,2.5828,local NE
+local,LT 230 kV Crato II / Taua II C M7 CE (04M7),3,126,local,2.4502,local NE
+local,LT 230 kV Paulo Afonso / Tacaratu,7,261,local,2.3889,local NE
+local,LT 04F1 Aquiraz II / Fortaleza,2,66,local,1.7238,local NE
+local,LT 230 kV Milagres / Coremas,1,176,local,1.446,local NE
+local,LT 's 230kV Campo Largo/Ourolândia II 04P1 e 04P2,1,9,local,1.2473,local NE
+local,Fluxo Bahia Sudoeste e Mop 489-R,23,66,local,1.2224,local NE
+local,LT 500 kV Presidente Dutra / Boa Esperança,2,15,sistemica,1.1852,corredor de exportação
+local,Sub Crato II CE - LT 230 kV Crato II / Taua II C M7 CE (04M7),3,60,local,1.1589,local NE
+outro,LT 500 kV Jaguaruana II / Acu III C V7 CE/RN (05V7),1,7,local,1.1223,outro
+local,LT 500 kV Rio das Éguas / Barreiras II,2,9,local,0.9857,local NE
+local,Fluxo Bahia Sudoeste_p(gor/btr),5,41,local,0.8527,local NE
+local,LT 230 kV Chapada I / Curral Novo do Piauí II,1,29,local,0.741,local NE
+local,Transformação 500/230 kV da SE São João do Piauí,3,24,local,0.5798,local NE
+outro,TR 230 / 69 kV Touros T1 RN (04T1) da SE Touros 69kV,1,16,local,0.4331,outro
+local,LT 230 kV Paraíso / Lagoa Nova II,5,56,local,0.39,local NE
+local,Transformadores 230/138 kV da SE Bom Nome,3,76,local,0.3019,local NE
+outro,LT 500kV Barreiras II / Buritirama (05N6),1,2,local,0.2906,outro
+local,LT 500kV Ribeiro Gonçalves/Colinas,1,4,sistemica,0.2609,corredor de exportação
+outro,SE Touros. (60.894-25 em execução no momento),2,6,local,0.2373,outro
+local,Sub Bom Jesus da Lapa BA - LT 230 kV B.JESUS Lapa / BROTAS.MACAUBAS C F5 BA (04F5),2,12,local,0.236,local NE
+local,LT 230 kV Milagres / Taua II C M4 CE (04M4),3,45,local,0.1886,local NE
+local,LTS 230 kV Sobradinho / Juazeiro da Bahia II,2,8,local,0.1885,local NE
+local,SE Açu III - Perda de LT,2,4,local,0.1373,local NE
+outro,LT 230 kV 04N3 Igapora III / Pindaí II,5,20,local,0.1155,outro
+local,TR 230 / 69 kV Igapora II T2 BA (04T2),2,4,local,0.1023,local NE
+local,Sub Juazeiro da Bahia III BA - TR 500 / 230 kV Juazeiro III T2 BA (05T2),2,4,local,0.0986,local NE
+exportacao,Fluxo Nordeste/Sudeste,8,16,sistemica,0.0969,intercâmbio nomeado
+local,LT 230 kV Ourolândia II/Campo Formoso,3,9,local,0.0959,local NE
+outro,SE Morro do Chapéu II,1,4,local,0.0742,outro
+outro,fluxo de potência ativa na LT 230 kV Campo Formoso / Ourolândia II,3,3,local,0.0717,outro
+local,Controle do fluxo de potência ativa na LT 230 kV Chapada III / Curral Novo do Piauí II,1,2,local,0.0619,local NE
+local,SE Ceará Mirim,2,8,local,0.0617,local NE
+local,Controle do fluxo de potência ativa na LT 230 kV Chapada II / Picos,7,24,local,0.0591,local NE
+outro,LT 500 kV Ceará Mirim II / Rio do Vento,2,4,local,0.0473,outro
+local,Controle do fluxo de potência ativa na LT 230 kV Chapada I / Curral Novo do Piauí II,1,2,local,0.0436,local NE
+outro,SE 500 kV SJP - Siper n° 7655-25,1,3,local,0.0393,outro
+local,LT 230 kV Fortaleza / Aquiraz (04F1) quando da perda dupla das LTs 230 kV Fortaleza / Aquiraz II (04F2 e 04F3),1,6,local,0.0377,local NE
+outro,LT LT 500 kV 05N4 Ourolândia II / Morro do Chapéu II,1,3,local,0.0366,outro
+outro,SE Milagres,2,10,local,0.0141,outro
+outro,SE Morro do Chapéu II do Agente Crop-chesf,1,2,sistemica,0.0069,outro
+local,Sub Bom Nome PE - TR 230 / 138 kV Bom Nome T7 PE (04T7),3,3,local,0.0065,local NE
+local,Transformação 230/138 kV da SE Bom Nome,2,12,local,0.0041,local NE
+outro,LT 230kV 04P1 Senhor Bonfim II / Folha Larga,1,2,local,0.0013,outro
+outro,SE Quixadá,1,1,local,0.0006,outro
+outro,SE 500 kV SJP - Siper n° 7654-25,1,3,local,0.0001,outro
+outro,LT 500 kV Barreiras II / Gilbués II (05C2),1,1,local,0.0,outro
+outro,fluxo entre as SEs Campina Grande III / Ceará Mirim II > 1100 MW,2,2,local,0.0,outro

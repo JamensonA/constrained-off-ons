@@ -7,3 +7,4 @@
 - G4 (2026-09-02): README completo com textos do autor, notebook 01_exploracao.ipynb, metodologia final, checklist da secao 9; figura 5 sem a barra "(sem descricao)".
 - Extra (2026-09-02): cruzamento com a 1a Temporada de Acesso 2026 (NT-ONS DPL 0083/2026): eng_por_uf, cruzar_temporada, figuras 6 e 7, CSVs e secao na metodologia/README.
 - Extra (2026-09-02): teste fino inabilitacao x taxa de corte por razao (CNF+REL vs ENE): taxas por UF com denominador comum, Spearman com p por permutacao, sensibilidade sem GO, figura 8, CSVs e secao na metodologia.
+- Extra (2026-09-02): Etapa 1 do cruzamento por PAC: parser de dsc_restricao (descricoes.py), eng_por_descricao.csv e eng_cnf_ne_por_elemento.csv com classe e classe_efetiva.
