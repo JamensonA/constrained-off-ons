@@ -72,7 +72,7 @@ Cruzamento geográfico (não causal) entre a energia não gerada por UF em 2025-
 
 ![Temporada de Acesso × ENG por UF](docs/figuras/fig6_temporada_x_eng.png)
 
-**Fig. 6** — Os dois mapas coincidem em volume. BA, RN, PI, PE e PB concentram a energia não gerada e também a potência inabilitada por falta de margem. A taxa de corte, porém, não acompanha a inabilitação (Spearman 0,19, n = 10). MG corta 26% com dois terços da potência cadastrada com margem. SP corta 19% com margem para todo o cadastro. A inabilitação mede a rede local em regime permanente. O corte que domina é energético e sistêmico, e a margem no barramento não evita esse tipo de corte.
+**Fig. 6** — Os dois mapas coincidem em volume. BA, RN, PI, PE e PB concentram a energia não gerada e também a potência inabilitada por falta de margem. A taxa de corte, porém, não acompanha a inabilitação (Spearman 0,19, n = 10). MG corta 26% com dois terços da potência cadastrada com margem. SP corta 19% com margem para todo o cadastro. A inabilitação vem de uma análise elétrica (fluxo, estabilidade e curto-circuito em cenários representativos). O corte que domina é energético, e nenhum critério elétrico o enxerga.
 
 ![Taxa de corte × inabilitação por UF](docs/figuras/fig7_taxa_corte_x_inabilitacao.png)
 
