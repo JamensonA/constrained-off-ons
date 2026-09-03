@@ -18,7 +18,16 @@ import datetime as dt  # noqa: E402
 
 import pandas as pd  # noqa: E402
 
-from coff import carregar, descricoes, download, figuras, metricas, qualificar  # noqa: E402
+from coff import (  # noqa: E402
+    carregar,
+    cruzamento_pac,
+    descricoes,
+    download,
+    figuras,
+    metricas,
+    pac,
+    qualificar,
+)
 
 log = logging.getLogger("coff")
 
@@ -166,6 +175,8 @@ def etapa_metricas(args: argparse.Namespace, q, rel_carga, delta_t_h: float) -> 
     etapa_validacao_externa(docs, q, t_cat)
     etapa_temporada(docs, q, rodape, args)
     etapa_descricoes(docs, q)
+    etapa_mapa_pac(docs, q, Path(args.dados) / "externo")
+    etapa_cruzamento_pac(docs, q)
     log.info("metricas: 8 figuras em docs/figuras, CSVs e tabela de sensibilidade em docs/")
 
 
@@ -262,12 +273,182 @@ def etapa_descricoes(docs: Path, q) -> None:
     texto = (
         f"Descricoes distintas apos normalizacao: {len(tab)} "
         "(registros qualificados desde 2025-09).\n\n"
-        "**20 maiores descricoes por ENG**\n\n" + "\n".join(_tabela_md(top)) + "\n\n"
-        "**ENG de rede (CNF + REL) no Nordeste por classe de elemento**\n\n"
-        + "\n".join(_tabela_md(res))
+        "**20 maiores descricoes por ENG**\n\n" + _tabela_md(top) + "\n\n"
+        "**ENG de rede (CNF + REL) no Nordeste por classe de elemento**\n\n" + _tabela_md(res)
     )
     _substituir_bloco(docs / "metodologia.md", "descricoes", texto)
     log.info("descricoes: %d distintas; NE rede: %s", len(tab), res.to_dict("records"))
+
+
+def etapa_mapa_pac(docs: Path, q, externo: Path) -> None:
+    """Etapa 3 do cruzamento por PAC: mapa usina/conjunto -> ponto de conexao (cadastro ONS)."""
+    usinas = (
+        q.drop_duplicates("id_ons")[["id_ons", "nom_usina", "id_estado", "fonte", "ceg"]]
+        .rename(columns={"id_estado": "uf"})
+        .astype(str)
+        .reset_index(drop=True)
+    )
+    modalidade, conjuntos = pac.carregar_registros(externo)
+    mapa = pac.construir_mapa(usinas, modalidade, conjuntos)
+    mes = q["din_instante"].dt.to_period("M").astype(str)
+    eng_id = q[mes >= "2025-01"].groupby(q["id_ons"].astype(str), observed=True)["eng_mwh"].sum()
+    mapa["eng_gwh_2025"] = (
+        mapa["id_ons"].map(eng_id).fillna(0.0) * mapa["fracao_potencia"].fillna(1.0) / 1000
+    ).round(3)
+    mapa.to_csv(docs / "mapa_usina_pac.csv", index=False)
+    pacs = pac.pacs_distintos(mapa, eng_id)
+    pacs.round(3).to_csv(docs / "pacs_distintos.csv", index=False)
+    # cobertura por metodo / confianca (id_ons e ENG 2025-01 -> ultimo mes)
+    um = mapa.drop_duplicates("id_ons").copy()
+    um["eng_gwh"] = um["id_ons"].map(eng_id).fillna(0.0) / 1000
+    cob = (
+        um.groupby(["metodo", "confianca"], dropna=False)
+        .agg(ids=("id_ons", "size"), eng_gwh=("eng_gwh", "sum"))
+        .reset_index()
+    )
+    cob["eng_pct"] = (100 * cob["eng_gwh"] / max(float(um["eng_gwh"].sum()), 1e-9)).round(1)
+    cob["eng_gwh"] = cob["eng_gwh"].round(1)
+    cob["confianca"] = cob["confianca"].fillna("—")
+    top = (
+        um.sort_values("eng_gwh", ascending=False)
+        .head(20)[["id_ons", "nom_usina", "uf", "fonte", "eng_gwh", "metodo", "confianca"]]
+        .copy()
+    )
+    pac_por_id = (
+        mapa[mapa["pac_nome"].notna()]
+        .sort_values("fracao_potencia", ascending=False)
+        .groupby("id_ons")
+        .apply(
+            lambda g: "; ".join(
+                f"{r.pac_nome} {r.pac_tensao_kv:.0f} kV ({100 * r.fracao_potencia:.0f} %)"
+                if pd.notna(r.pac_tensao_kv)
+                else f"{r.pac_nome} ({100 * r.fracao_potencia:.0f} %)"
+                for r in g.itertuples()
+            ),
+            include_groups=False,
+        )
+    )
+    top["pac"] = top["id_ons"].map(pac_por_id).fillna("(sem PAC)")
+    top["eng_gwh"] = top["eng_gwh"].round(1)
+    top["nom_usina"] = top["nom_usina"].map(figuras._capitalizar_nome)
+    top.columns = [
+        "id_ons",
+        "usina/conjunto",
+        "UF",
+        "fonte",
+        "ENG (GWh)",
+        "método",
+        "confiança",
+        "PAC",
+    ]
+    cob.columns = ["método", "confiança", "id_ons", "ENG (GWh)", "ENG (%)"]
+    texto = (
+        f"Mapa: {len(mapa)} linhas (id_ons x PAC) para {mapa['id_ons'].nunique()} "
+        "usinas/conjuntos; "
+        f"{int((um['metodo'] == 'nao_casado').sum())} sem PAC. PACs distintos apos normalizacao: "
+        f"{len(pacs)} (`pacs_distintos.csv`).\n\n**Cobertura por metodo e confianca** "
+        "(ENG 2025-01 -> ultimo mes)\n\n"
+        + _tabela_md(cob)
+        + "\n\n**20 maiores usinas/conjuntos por ENG e seu PAC**\n\n"
+        + _tabela_md(top)
+    )
+    _substituir_bloco(docs / "metodologia.md", "mapa_pac", texto)
+    log.info(
+        "mapa PAC: %d linhas, %d PACs distintos, %d nao casados",
+        len(mapa),
+        len(pacs),
+        int((um["metodo"] == "nao_casado").sum()),
+    )
+
+
+def etapa_cruzamento_pac(docs: Path, q) -> None:
+    """Etapa 4 do cruzamento por PAC: adjacencias por regra e cruzamento por barramento."""
+    insumos = [
+        docs / "mapa_usina_pac.csv",
+        docs / "nt02_barramentos_geracao.csv",
+        docs / "nt02_siglas_pac.csv",
+    ]
+    if not all(c.exists() for c in insumos):
+        log.info(
+            "cruzamento PAC: insumos ausentes (%s); etapa pulada",
+            [c.name for c in insumos if not c.exists()],
+        )
+        return
+    mapa = pd.read_csv(docs / "mapa_usina_pac.csv")
+    nt = pd.read_csv(docs / "nt02_barramentos_geracao.csv")
+    siglas = pd.read_csv(docs / "nt02_siglas_pac.csv")
+    chaves = set(mapa["pac_nome"].dropna().astype(str))
+    adj_regra, faltantes = cruzamento_pac.gerar_adjacencias(chaves, siglas)
+    caminho_adj = docs / "adjacencia_pac.csv"
+    if caminho_adj.exists():
+        # preserva linhas revisadas a mao (origem != regra) e substitui as geradas por regra
+        atual = pd.read_csv(caminho_adj)
+        manuais = atual[atual["origem"].astype(str) != "regra"]
+        adj = pd.concat([adj_regra, manuais], ignore_index=True).drop_duplicates(
+            ["sigla", "pac_adjacente"]
+        )
+    else:
+        adj = adj_regra
+    adj.to_csv(caminho_adj, index=False)
+    propostas = cruzamento_pac.propor_adjacencias(
+        pd.read_csv(docs / "eng_por_descricao.csv"), siglas, chaves
+    )
+    propostas.to_csv(docs / "adjacencia_propostas.csv", index=False)
+    cruz = cruzamento_pac.cruzar_barramentos(q, mapa, adj, nt, siglas)
+    cruz.round(4).to_csv(docs / "cruzamento_pac.csv", index=False)
+    com_eng = cruz[cruz["eng_gwh"] > 0]
+    md = cruz[
+        [
+            "sigla",
+            "uf",
+            "barramento",
+            "resultado",
+            "n_usinas",
+            "eng_gwh",
+            "eng_energetica_gwh",
+            "eng_confiabilidade_gwh",
+            "eng_eletrica_gwh",
+            "taxa_corte",
+            "frac_rede_exportacao",
+            "coincidencia",
+            "condicao",
+        ]
+    ].copy()
+    for c in ("eng_gwh", "eng_energetica_gwh", "eng_confiabilidade_gwh", "eng_eletrica_gwh"):
+        md[c] = md[c].round(0).astype(int)
+    md["taxa_corte"] = (100 * md["taxa_corte"]).round(1)
+    md["frac_rede_exportacao"] = (100 * md["frac_rede_exportacao"]).round(0)
+    md["condicao"] = md["condicao"].str.slice(0, 60)
+    md.columns = [
+        "sigla",
+        "UF",
+        "barramento",
+        "resultado",
+        "usinas",
+        "ENG",
+        "ENE",
+        "CNF",
+        "REL",
+        "taxa %",
+        "rede exp. %",
+        "coinc.",
+        "condição",
+    ]
+    texto = (
+        f"Adjacencias por regra: {len(adj_regra)} linhas (`adjacencia_pac.csv`); siglas sem "
+        f"correspondente no mapa: {faltantes or 'nenhuma'}. Propostas de corredor (nao aplicadas): "
+        f"{len(propostas)} (`adjacencia_propostas.csv`).\n\n"
+        f"Barramentos com ENG > 0: {len(com_eng)} de {len(cruz)}; com coincidencia = true: "
+        f"{int(com_eng['coincidencia'].sum())} de {len(com_eng)}.\n\n" + _tabela_md(md)
+    )
+    _substituir_bloco(docs / "metodologia.md", "cruzamento_pac", texto)
+    log.info(
+        "cruzamento PAC: %d barramentos, %d com ENG, %d coincidencias; siglas faltantes: %s",
+        len(cruz),
+        len(com_eng),
+        int(com_eng["coincidencia"].sum()),
+        faltantes or "nenhuma",
+    )
 
 
 TITULO_FIG8 = "Na escala de UF, nem o corte de rede se correlaciona com a inabilitação (n = 10)"
