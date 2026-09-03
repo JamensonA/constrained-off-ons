@@ -10,3 +10,4 @@
 - Extra (2026-09-02): Etapa 1 do cruzamento por PAC: parser de dsc_restricao (descricoes.py), eng_por_descricao.csv e eng_cnf_ne_por_elemento.csv com classe e classe_efetiva.
 - Extra (2026-09-02): Etapa 2 do cruzamento por PAC: extracao da NT-ONS DPL 0083/2026 (nt02.py, scripts/extrair_nt02.py), nt02_barramentos_geracao.csv, validacao do INAB por UF (BA: NT prevalece, 4.659,7 MW), figuras 6-8 regeradas.
 - Extra (2026-09-02): Etapa 3 do cruzamento por PAC: mapa usina/conjunto -> ponto de conexao (pac.py) a partir de modalidade-usina + usina_conjunto, com normalizacao de grafias, rateio por potencia, mapa_usina_pac.csv e pacs_distintos.csv.
+- Extra (2026-09-02): Etapa 4 do cruzamento por PAC: siglas da NT 02 -> PAC, adjacencias por regra (adjacencia_pac.csv), cruzamento por barramento (cruzamento_pac.csv) com regra de coincidencia A/B (NE) e C (fora do NE); propostas de corredor registradas e rejeitadas.

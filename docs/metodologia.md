@@ -318,9 +318,51 @@ Mapa: 303 linhas (id_ons x PAC) para 282 usinas/conjuntos; 12 sem PAC. PACs dist
 
 ### Etapa 4 — cruzamento nominal por barramento
 
-Sigla da NT 02 -> nome do PAC: `nt02_siglas_pac.csv` (transcrita pelo autor). Adjacencias em `adjacencia_pac.csv`, geradas por regra (`origem=regra`: mesmo PAC; ICG <-> SE homonima; seccionamento de LT/LD <-> as duas SEs do par; Queimada Nova <-> Queimada Nova 2 e Santa Vitoria do Palmar <-> ... 2; a mesma SE em niveis de tensao distintos ja e uma chave so) e revisadas a mao (linhas com outra `origem` sao preservadas nas reexecucoes). Propostas de adjacencia por corredor, extraidas dos elementos "LT X / Y" das descricoes de corte, ficam em `adjacencia_propostas.csv` e nao entram no cruzamento ate aprovacao. Por barramento: usinas do mapa cujo PAC e o do barramento ou adjacente (ENG ponderada por `fracao_potencia`), ENG 2025-01 -> ultimo mes total e por categoria, taxa de corte, top 3 descricoes (desde 2025-09), fator limitante e resultado. `coincidencia` (regra do autor): no Nordeste, verdadeira quando (A) o barramento e INAB e a ENG de rede (CNF + REL) das usinas adjacentes e majoritariamente das classes efetivas "intercâmbio nomeado" ou "corredor de exportação", ou (B) as descricoes de corte nomeiam um elemento local do mesmo corredor do barramento; fora do Nordeste, (C) quando um elemento citado no fator limitante da NT aparece nas descricoes de corte. A coluna `condicao` registra qual se aplicou. Tabela: `cruzamento_pac.csv`.
+Sigla da NT 02 -> nome do PAC: `nt02_siglas_pac.csv` (transcrita pelo autor). Adjacencias em `adjacencia_pac.csv`, geradas por regra (`origem=regra`: mesmo PAC; ICG <-> SE homonima; seccionamento de LT/LD <-> as duas SEs do par; Queimada Nova <-> Queimada Nova 2 e Santa Vitoria do Palmar <-> ... 2; a mesma SE em niveis de tensao distintos ja e uma chave so) e revisadas a mao (linhas com outra `origem` sao preservadas nas reexecucoes). Propostas de adjacencia por corredor, extraidas dos elementos "LT X / Y" das descricoes de corte e dos extremos dos seccionamentos, ficam em `adjacencia_propostas.csv` apenas como registro: **as 7 propostas foram rejeitadas pelo autor**. Criterio adotado: a ENG pertence ao PAC do cadastro; relacoes de corredor entram pela condicao B (elemento nomeado nas descricoes de corte), nao por agregacao de usinas de outros PACs. Por barramento: usinas do mapa cujo PAC e o do barramento ou adjacente (ENG ponderada por `fracao_potencia`), ENG 2025-01 -> ultimo mes total e por categoria, taxa de corte, top 3 descricoes (desde 2025-09), fator limitante e resultado. `coincidencia` (regra do autor): no Nordeste, verdadeira quando (A) o barramento e INAB e a ENG de rede (CNF + REL) das usinas adjacentes e majoritariamente das classes efetivas "intercâmbio nomeado" ou "corredor de exportação", ou (B) as descricoes de corte nomeiam um elemento local do mesmo corredor do barramento; fora do Nordeste, (C) quando um elemento citado no fator limitante da NT aparece nas descricoes de corte. A coluna `condicao` registra qual se aplicou. Tabela: `cruzamento_pac.csv`.
 
 <!-- cruzamento_pac:inicio -->
+Adjacencias por regra: 35 linhas (`adjacencia_pac.csv`); siglas sem correspondente no mapa: ["ULG = Luiz Gonzaga -> chave 'LUIZ GONZAGA' nao esta no mapa", "PBT = Parnaíba 3 -> chave 'PARNAIBA 3' nao esta no mapa", "CRT = Correntina -> chave 'CORRENTINA' nao esta no mapa", "CAF-II = Campo Formoso 2 -> chave 'CAMPO FORMOSO 2' nao esta no mapa", "ICA = Ibicoara -> chave 'IBICOARA' nao esta no mapa", "ITB = Itabaiana -> chave 'ITABAIANA' nao esta no mapa", "STBD = Bandeirantes -> chave 'BANDEIRANTES' nao esta no mapa", "MCL2_IRAE = Montes Claros 2 -> chave 'MONTES CLAROS 2' nao esta no mapa", "LGO = Lagos -> chave 'LAGOS' nao esta no mapa", "ALE2 = Alegrete 2 -> chave 'ALEGRETE 2' nao esta no mapa"]. Propostas de corredor (nao aplicadas): 7 (`adjacencia_propostas.csv`).
+
+Barramentos com ENG > 0: 17 de 36; com coincidencia = true: 11 de 17.
+
+| sigla | UF | barramento | resultado | usinas | ENG | ENE | CNF | REL | taxa % | rede exp. % | coinc. | condição |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| JCT | RN | João Câmara III | INAB | 17 | 5202 | 2392 | 2704 | 106 | 32.6 | 21.0 | True | B: descrições nomeiam elemento local do corredor (LT 500 kV  |
+| GDO | BA | Gentio do Ouro II | INAB | 5 | 3454 | 1885 | 619 | 950 | 19.5 | 96.0 | True | A: INAB e ENG de rede majoritaria em intercâmbio/corredor de |
+| OUR | BA | Ourolândia II | INAB | 11 | 2625 | 1707 | 567 | 351 | 13.5 | 70.0 | True | A: INAB e ENG de rede majoritaria em intercâmbio/corredor de |
+| CID | RN | Ceará Mirim II | INAB | 2 | 1932 | 927 | 988 | 16 | 23.7 | 25.0 | True | B: descrições nomeiam elemento local do corredor (LT 500 kV  |
+| SLD | PB | Santa Luzia | INAB | 8 | 1373 | 1097 | 213 | 63 | 11.2 | 95.0 | True | A: INAB e ENG de rede majoritaria em intercâmbio/corredor de |
+| CNP | PI | Curral Novo do Piauí II | INAB | 9 | 1332 | 1004 | 225 | 102 | 10.7 | 74.0 | True | A: INAB e ENG de rede majoritaria em intercâmbio/corredor de |
+| SJI | PI | São João do Piauí | INAB | 6 | 1322 | 955 | 256 | 110 | 14.6 | 97.0 | True | A: INAB e ENG de rede majoritaria em intercâmbio/corredor de |
+| TRS | RN | Touros | INAB | 4 | 1198 | 658 | 527 | 13 | 31.6 | 33.0 | True | B: descrições nomeiam elemento local do corredor (SE Touros. |
+| QND | PI | Queimada Nova II | INAB | 2 | 1120 | 831 | 273 | 16 | 12.7 | 86.0 | True | A: INAB e ENG de rede majoritaria em intercâmbio/corredor de |
+| SDS | BA | Sol do Sertão | INAB | 1 | 799 | 365 | 156 | 278 | 27.6 | 96.0 | True | A: INAB e ENG de rede majoritaria em intercâmbio/corredor de |
+| ACD | RN | Açu II | AD | 5 | 667 | 330 | 321 | 17 | 34.9 | 30.0 | False |  |
+| SPA2 | RS | Santa Vitória do Palmar 2 | AD | 1 | 298 | 124 | 0 | 175 | 11.0 | 0.0 | False |  |
+| BDD | BA | Brumado II | INAB | 1 | 137 | 68 | 28 | 41 | 23.6 | 98.0 | True | A: INAB e ENG de rede majoritaria em intercâmbio/corredor de |
+| MCL2_IRAE | MG | Montes Claros 2 - Irapé C1 | INAB | 1 | 88 | 63 | 16 | 9 | 25.0 | 67.0 | False |  |
+| GET | SP | Getulina | ADVC | 1 | 86 | 85 | 0 | 1 | 19.6 | 9.0 | False |  |
+| LIV3 | RS | Livramento 3 | PC | 1 | 62 | 62 | 0 | 0 | 4.8 | 100.0 | False |  |
+| SDA2 | MG | Serra das Almas II | INAB | 1 | 44 | 37 | 2 | 4 | 5.2 | 79.0 | False |  |
+| PLO | BA | Polo | AD | 0 | 0 | 0 | 0 | 0 | nan | nan | False |  |
+| CMQ | BA | Camaçari IV | AD | 0 | 0 | 0 | 0 | 0 | nan | nan | False |  |
+| IMB | MS | Imbirussú | AD | 0 | 0 | 0 | 0 | 0 | nan | nan | False |  |
+| GRL | PR | Gralha Azul | AD | 0 | 0 | 0 | 0 | 0 | nan | nan | False |  |
+| ARE | PR | Areia | AD | 0 | 0 | 0 | 0 | 0 | nan | nan | False |  |
+| RLD | AL | Rio Largo II | AD | 0 | 0 | 0 | 0 | 0 | nan | nan | False |  |
+| SSSE | MG | São Simão | AD | 0 | 0 | 0 | 0 | 0 | nan | nan | False |  |
+| SUD | PE | Suape II | AD | 0 | 0 | 0 | 0 | 0 | nan | nan | False |  |
+| STBD | GO | Bandeirantes | INAB | 0 | 0 | 0 | 0 | 0 | nan | nan | False |  |
+| ALE2 | RS | Alegrete 2 | PC | 0 | 0 | 0 | 0 | 0 | nan | nan | False |  |
+| ITB | SE | Itabaiana | INAB | 0 | 0 | 0 | 0 | 0 | nan | nan | False |  |
+| PBT | PI | Parnaíba III | INAB | 0 | 0 | 0 | 0 | 0 | nan | nan | False |  |
+| ULG | PE | Luiz Gonzaga | INAB | 0 | 0 | 0 | 0 | 0 | nan | nan | False |  |
+| ICA | BA | Ibicoara | INAB | 0 | 0 | 0 | 0 | 0 | nan | nan | False |  |
+| CAF-II BRR-II | BA | Campo Formoso II Barra II C1 | INAB | 0 | 0 | 0 | 0 | 0 | nan | nan | False |  |
+| CAF-II | BA | Campo Formoso II | INAB | 0 | 0 | 0 | 0 | 0 | nan | nan | False |  |
+| CRT | BA | Correntina | INAB | 0 | 0 | 0 | 0 | 0 | nan | nan | False |  |
+| LGO | RJ | Lagos | AD | 0 | 0 | 0 | 0 | 0 | nan | nan | False |  |
+| SGD | PR | Segredo | AD | 0 | 0 | 0 | 0 | 0 | nan | nan | False |  |
 <!-- cruzamento_pac:fim -->
 
 ## Limitacoes

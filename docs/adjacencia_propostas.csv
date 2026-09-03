@@ -1,0 +1,8 @@
+sigla,pac_barramento,pac_adjacente,relacao,origem,eng_gwh_descricao
+SJI,SAO JOAO DO PIAUI,SOBRADINHO,corredor,descricao: LT 500 kV Sobradinho / São João do Piauí,25.3
+OUR,OUROLANDIA 2,CAMPO FORMOSO,corredor,descricao: LT 230 kV Ourolândia II/Campo Formoso,0.1
+JCT,JOAO CAMARA 3,MONTE VERDE,corredor,seccionamento: SECC. LT JOAO CAMARA 3 – MONTE VERDE,
+JCT,JOAO CAMARA 3,ACU 3,corredor,seccionamento: SECC. LT ACU 3 – JOAO CAMARA 3,
+MVR,MONTE VERDE,JOAO CAMARA 3,corredor,seccionamento: SECC. LT JOAO CAMARA 3 – MONTE VERDE,
+MVR,MONTE VERDE,JOAO CAMARA 3 ICG,corredor,ICG de JOAO CAMARA 3,
+MCL2_IRAE,MONTES CLAROS 2,JANAUBA 3,corredor,seccionamento: SECC. LD JANAUBA 3 – MONTES CLAROS 2,
