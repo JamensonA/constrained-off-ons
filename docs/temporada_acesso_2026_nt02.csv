@@ -1,16 +1,16 @@
-uf,ad_mw,advc_mw,pc_mw,inab_mw
-PA,,36,,
-PI,,,,1488.4
-RN,155.4,,,798.25
-PB,,,,848.5
-PE,120.7,,,473.6
-AL,364.5,,,
-SE,1000,,,300
-BA,1367.3,,,4684.4
-MG,1114.4,,,554.2
-RJ,517.2,,,
-SP,,300,1950,
-GO,,,,140
-MS,68,,,
-PR,2378,,,
-RS,666,,992.8,
+uf,ad_mw,advc_mw,pc_mw,inab_mw,inab_mw_infografico,inab_mw_nt,fonte
+PA,,36.0,,,,0.0,infografico NT 02 (extrato 01/09/2026)
+PI,,,,1488.4,1488.4,1488.4,infografico NT 02 (extrato 01/09/2026)
+RN,155.4,,,798.25,798.25,798.3,infografico NT 02 (extrato 01/09/2026)
+PB,,,,848.5,848.5,848.5,infografico NT 02 (extrato 01/09/2026)
+PE,120.7,,,473.6,473.6,473.6,infografico NT 02 (extrato 01/09/2026)
+AL,364.5,,,,,0.0,infografico NT 02 (extrato 01/09/2026)
+SE,1000.0,,,300.0,300.0,300.0,infografico NT 02 (extrato 01/09/2026)
+BA,1367.3,,,4659.7,4684.4,4659.7,"NT-ONS DPL 0083/2026, tabelas 4-2 e 5-9 (NT prevalece)"
+MG,1114.4,,,554.2,554.2,554.2,infografico NT 02 (extrato 01/09/2026)
+RJ,517.2,,,,,0.0,infografico NT 02 (extrato 01/09/2026)
+SP,,300.0,1950.0,,,0.0,infografico NT 02 (extrato 01/09/2026)
+GO,,,,140.0,140.0,140.0,infografico NT 02 (extrato 01/09/2026)
+MS,68.0,,,,,0.0,infografico NT 02 (extrato 01/09/2026)
+PR,2378.0,,,,,0.0,infografico NT 02 (extrato 01/09/2026)
+RS,666.0,,992.8,,,0.0,infografico NT 02 (extrato 01/09/2026)

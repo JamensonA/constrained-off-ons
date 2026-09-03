@@ -125,7 +125,7 @@ Spearman(taxa de corte, fracao inabilitada) = **0.19** (n = 10 UFs com os dois d
 | UF | ENG (GWh) | gerada (GWh) | taxa (%) | cadastrado (MW) | INAB (MW) | INAB (%) |
 |---|---|---|---|---|---|---|
 | RN | 19223.9 | 57509.4 | 25.1 | 953.6 | 798.2 | 83.7 |
-| BA | 17203.6 | 74083.5 | 18.8 | 6051.7 | 4684.4 | 77.4 |
+| BA | 17203.6 | 74083.5 | 18.8 | 6027.0 | 4659.7 | 77.3 |
 | MG | 7894.5 | 22601.6 | 25.9 | 1668.6 | 554.2 | 33.2 |
 | PI | 5922.8 | 34344.9 | 14.7 | 1488.4 | 1488.4 | 100.0 |
 | CE | 4857.9 | 14729.8 | 24.8 | nan | nan | nan |
@@ -4197,6 +4197,68 @@ o
  
 |
 <!-- descricoes:fim -->
+
+### Etapa 2 — barramentos e fatores limitantes da NT 02
+
+Fonte: NT-ONS DPL 0083/2026 (PDF publico, baixado para `data/externo/`, gitignored). O texto e extraido com a biblioteca padrao (streams FlateDecode via `zlib`) e as tabelas 4-2 (barramentos candidatos do segmento geracao, MUST 2027–2031), 4-3 (vencedores do LRCAP 2026, marcados `lrcap`) e as tabelas "Capacidade Remanescente e Fatores Limitantes" da secao 6 sao lidas por regex em `src/coff/nt02.py` (`scripts/extrair_nt02.py`). Para cada barramento vale a tabela do ultimo produto disponivel (2031). Resultado derivado: `INAB` se a capacidade remanescente do barramento e 0; `PC` se e positiva e menor que o MUST (limite compartilhado, ex. Alegrete 2 + Livramento 3); `ADVC` se o fator cita uma configuracao condicionante; `AD` caso contrario. `elementos_citados` extrai LT/SE/TR/rede do texto do fator; o fator generico "violacao dos limites de intercambio ou de fluxo previamente definidos" (todos os barramentos inabilitados do Nordeste) vira "limites de intercambio/fluxo (exportacao do Nordeste)". Tabela: `nt02_barramentos_geracao.csv`. Validacao: soma do INAB por UF contra a transcricao do infografico; onde diverge, a NT prevalece: `temporada_acesso_2026_nt02.csv` passa a usar o INAB da NT como referencia (`inab_mw`), guarda o valor transcrito em `inab_mw_infografico` e registra a origem em `fonte`. Unica divergencia encontrada: **BA, 4.659,7 MW na NT contra 4.684,4 MW no infografico (24,7 MW)**; a origem da diferenca nao esta na NT. As figuras 6 a 8 e os CSVs de cruzamento usam o valor da NT.
+
+<!-- nt02:inicio -->
+36 barramentos do segmento geracao (10 do LRCAP 2026). Resultado: {'INAB': 21, 'AD': 12, 'PC': 2, 'ADVC': 1}.
+
+| UF | barramento | kV | MUST 2031 | cap. rem. 2031 | resultado | LRCAP | fator limitante |
+|---|---|---|---|---|---|---|---|
+| GO | Bandeirantes | 230 | 140.0 | 0.0 | INAB |  | Sobrecarga na LT 230 kV C. Dourada - Itumbiara em regime normal de operação. |
+| MG | Montes Claros 2 - Irapé C1 | 345 | 300.0 | 0.0 | INAB |  | Colapso de tensão após contingências simples na rede de 500 kV da malha Goiás Minas Gerais São Paulo seguidas  |
+| MG | Serra das Almas II | 500 | 254.2 | 0.0 | INAB |  | Colapso de tensão após contingências simples na rede de 500 kV da malha Goiás Minas Gerais São Paulo seguidas  |
+| RJ | Lagos | 500 | 17.2 | 17.2 | AD |  | Não foram encontradas violações na região em análise para o valor cadastrado. |
+| SP | Getulina | 440 | 300.0 | 300.0 | ADVC |  | Não foram encontradas violações na região em análise para o valor cadastrado. Configuração G descrita na |
+| BA | Ourolândia II | 500 | 875.1 | 0.0 | INAB |  | Incapacidade de acréscimo de nova geração devido a violação dos limites de intercâmbio ou de fluxo previamente |
+| BA | Correntina | 500 | 500.0 | 0.0 | INAB |  | Incapacidade de acréscimo de nova geração devido a violação dos limites de intercâmbio ou de fluxo previamente |
+| BA | Sol do Sertão | 500 | 586.9 | 0.0 | INAB |  | Incapacidade de acréscimo de nova geração devido a violação dos limites de intercâmbio ou de fluxo previamente |
+| BA | Gentio do Ouro II | 500 | 784.8 | 0.0 | INAB |  | Incapacidade de acréscimo de nova geração devido a violação dos limites de intercâmbio ou de fluxo previamente |
+| BA | Campo Formoso II | 500 | 824.4 | 0.0 | INAB |  | Incapacidade de acréscimo de nova geração devido a violação dos limites de intercâmbio ou de fluxo previamente |
+| BA | Campo Formoso II Barra II C1 | 500 | 525.0 | 0.0 | INAB |  | Incapacidade de acréscimo de nova geração devido a violação dos limites de intercâmbio ou de fluxo previamente |
+| BA | Brumado II | 230 | 293.5 | 0.0 | INAB |  | Incapacidade de acréscimo de nova geração devido a violação dos limites de intercâmbio ou de fluxo previamente |
+| BA | Ibicoara | 230 | 270.0 | 0.0 | INAB |  | Incapacidade de acréscimo de nova geração devido a violação dos limites de intercâmbio ou de fluxo previamente |
+| PB | Santa Luzia | 500 | 848.5 | 0.0 | INAB |  | Incapacidade de acréscimo de nova geração devido a violação dos limites de intercâmbio ou de fluxo previamente |
+| PE | Luiz Gonzaga | 500 | 473.6 | 0.0 | INAB |  | Incapacidade de acréscimo de nova geração devido a violação dos limites de intercâmbio ou de fluxo previamente |
+| PI | Curral Novo do Piauí II | 500 | 769.1 | 0.0 | INAB |  | Incapacidade de acréscimo de nova geração devido a violação dos limites de intercâmbio ou de fluxo previamente |
+| PI | Queimada Nova II | 500 | 359.6 | 0.0 | INAB |  | Incapacidade de acréscimo de nova geração devido a violação dos limites de intercâmbio ou de fluxo previamente |
+| PI | Parnaíba III | 230 | 255.0 | 0.0 | INAB |  | Incapacidade de acréscimo de nova geração devido a violação dos limites de intercâmbio ou de fluxo previamente |
+| PI | São João do Piauí | 230 | 104.7 | 0.0 | INAB |  | Incapacidade de acréscimo de nova geração devido a violação dos limites de intercâmbio ou de fluxo previamente |
+| RN | Ceará Mirim II | 500 | 500.0 | 0.0 | INAB |  | Incapacidade de acréscimo de nova geração devido a violação dos limites de intercâmbio ou de fluxo previamente |
+| RN | João Câmara III | 230 | 295.8 | 0.0 | INAB |  | Incapacidade de acréscimo de nova geração devido a violação dos limites de intercâmbio ou de fluxo previamente |
+| RN | Touros | 230 | 2.5 | 0.0 | INAB |  | Incapacidade de acréscimo de nova geração devido a violação dos limites de intercâmbio ou de fluxo previamente |
+| SE | Itabaiana | 230 | 300.0 | 0.0 | INAB |  | Incapacidade de acréscimo de nova geração devido a violação dos limites de intercâmbio ou de fluxo previamente |
+| RS | Alegrete 2 | 230 | 185.25 | 100.0 | PC |  | Sobrecarga na LT 230 kV Alegrete 2 Maçambará, na contingência da LT 230 kV Maçambará UTE Uruguaiana, na carga  |
+| RS | Livramento 3 | 230 | 807.5 | 360.0 | PC |  | Sobrecarga na LT 230 kV Bagé 2 Livramento 2, em condição normal de operação, na carga máxima noturna de invern |
+| RS | Santa Vitória do Palmar 2 | 525 | 616.0 | 616.0 | AD |  | Não foram encontradas violações na região em análise para o valor cadastrado. |
+| MG | São Simão | 500 | 308.561 | 308.561 | AD | sim | Não foram encontradas violações na região em análise para o valor cadastrado. |
+| AL | Rio Largo II | 230 | 364.538 | 364.538 | AD | sim | Não foram encontradas violações na região em análise para o valor cadastrado. |
+| BA | Camaçari IV | 230 | 18.31 | 18.31 | AD | sim | Não foram encontradas violações na região em análise para o valor cadastrado. |
+| BA | Polo | 230 | 79.024 | 79.024 | AD | sim | Não foram encontradas violações na região em análise para o valor cadastrado. |
+| PE | Suape II | 230 | 120.724 | 120.724 | AD | sim | Não foram encontradas violações na região em análise para o valor cadastrado. |
+| RN | Açu II | 230 | 50.0 | 50.0 | AD | sim | Não foram encontradas violações na região em análise para o valor cadastrado. |
+| MS | Imbirussú | 230 | 68.0 | 68.0 | AD | sim | Não foram encontradas violações na região em análise para o valor cadastrado. |
+| PR | Gralha Azul | 230 | 220.0 | 220.0 | AD | sim | Sobrecarga na LT 230 kV Gralha Azul - Umbará, em regime normal de operação, na carga máxima noturna de verão. |
+| PR | Areia | 525 | 860.0 | 860.0 | AD | sim | Não foram encontradas violações na região em análise para o valor cadastrado. |
+| PR | Segredo | 525 | 1266.0 | 1266.0 | AD | sim | Não foram encontradas violações na região em análise para o valor cadastrado. |
+
+**Validacao do INAB por UF (NT x infografico)**
+
+| UF | INAB NT (MW) | INAB infografico (MW) | dif (MW) |
+|---|---|---|---|
+| BA | 4659.7 | 4684.4 | -24.7 |
+| GO | 140.0 | 140.0 | 0.0 |
+| MG | 554.2 | 554.2 | 0.0 |
+| PB | 848.5 | 848.5 | 0.0 |
+| PE | 473.6 | 473.6 | 0.0 |
+| PI | 1488.4 | 1488.4 | 0.0 |
+| RN | 798.3 | 798.2 | 0.0 |
+| SE | 300.0 | 300.0 | 0.0 |
+
+Divergencias: BA: NT 4659.7 MW vs infográfico 4684.4 MW (dif -24.7).
+<!-- nt02:fim -->
 
 ## Limitacoes
 
